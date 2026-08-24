@@ -175,9 +175,7 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
       </div>
     </div>
     <div class="card" style="background:#f8f8fb">
-      <div class="lbl">Founder's focus for today</div>
-      <p id="pitchFocus" style="font-size:13px;color:#1a1a2e;margin-bottom:4px"></p>
-      <p id="pitchUncertainty" style="font-size:12px;color:#888"></p>
+      <div id="pitchFounderInfo"></div>
     </div>
   </div>
 
@@ -248,12 +246,11 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
     <div class="logo-mark">🔥</div>
     <div><div class="logo-text">SheBlooms</div><div class="logo-sub">Founders' Hot Seat</div></div>
   </div>
-  <div class="card" style="text-align:center;padding:1.25rem">
-    <p style="font-size:13px;color:#666">You're in the room. Use the tabs below to participate.</p>
-  </div>
+  <div id="partFounderContext"></div>
   <div class="tab-row" style="justify-content:center">
     <div class="tab active" onclick="switchPartTab('reflection', event)">Reflection</div>
     <div class="tab" onclick="switchPartTab('questions', event)">Questions</div>
+    <div class="tab" onclick="switchPartTab('review', event)">Review</div>
   </div>
 
   <div id="partTab-reflection">
@@ -282,6 +279,13 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
       <h3 style="margin-bottom:4px">Vote on questions</h3>
       <p style="margin-bottom:1rem">Upvote the ones you most want answered.</p>
       <div id="partQList"><div class="loader">Loading questions...</div></div>
+    </div>
+  </div>
+
+  <div id="partTab-review" style="display:none">
+    <div class="card">
+      <h3 style="margin-bottom:1rem">Session review</h3>
+      <div id="partReviewContent"><div class="loader">Loading review...</div></div>
     </div>
   </div>
 </div>
@@ -330,7 +334,7 @@ async function enterPin(){
     document.getElementById('setupPartPin').textContent=sess.participant_pin;
     await loadFoundersFromDB();renderSlots();showScreen('screen-setup');
   } else {
-    await loadFoundersFromDB();subscribeToQuestions();showScreen('screen-participant');renderPartQList();
+    await loadFoundersFromDB();subscribeToQuestions();showScreen('screen-participant');renderPartFounderContext();renderPartQList();
   }
 }
 
@@ -368,7 +372,7 @@ function renderSlots(){
       <div class="field"><div class="lbl">Name</div><input type="text" value="${f.name||''}" placeholder="Full name" oninput="updateLocal(${i},'name',this.value)"></div>
       <div class="field"><div class="lbl">Startup</div><input type="text" value="${f.startup||''}" placeholder="Startup name" oninput="updateLocal(${i},'startup',this.value)"></div>
       <div class="field"><div class="lbl">Stage</div><input type="text" value="${f.stage||''}" placeholder="e.g. Pre-Seed, Seed" oninput="updateLocal(${i},'stage',this.value)"></div>
-      <div class="field"><div class="lbl">What problem are you solving?</div><textarea placeholder="Describe the problem and who has it..." oninput="updateLocal(${i},'problem',this.value)">${f.problem||''}</textarea></div>
+      <div class="field"><div class="lbl">Problem that is solving</div><textarea placeholder="Describe the problem and who has it..." oninput="updateLocal(${i},'problem',this.value)">${f.problem||''}</textarea></div>
       <div class="field"><div class="lbl">Feedback focus</div><input type="text" value="${f.feedback_focus||''}" placeholder="What specific feedback are they looking for?" oninput="updateLocal(${i},'feedback_focus',this.value)"></div>
       <div class="field" style="margin-bottom:0"><div class="lbl">Biggest uncertainty</div><input type="text" value="${f.uncertainty||''}" placeholder="Their biggest uncertainty right now" oninput="updateLocal(${i},'uncertainty',this.value)"></div>
     </div>
@@ -404,8 +408,13 @@ function adminGoTo(n){
 function renderPitchScreen(){
   const f=founders[currentIdx];if(!f)return;
   document.getElementById('pitchRoundLabel').textContent=`${f.name} · ${currentIdx+1} of ${founders.length}`;
-  document.getElementById('pitchFocus').textContent=f.feedback_focus?'🎯 '+f.feedback_focus:'';
-  document.getElementById('pitchUncertainty').textContent=f.uncertainty?'Uncertainty: '+f.uncertainty:'';
+  const infoEl=document.getElementById('pitchFounderInfo');
+  infoEl.innerHTML=`
+    <div style="margin-bottom:10px"><div class="lbl" style="margin-bottom:2px">Startup</div><div style="font-size:13px;color:#1a1a2e;font-weight:500">${f.startup||'—'}${f.stage?' · '+f.stage:''}</div></div>
+    ${f.problem?`<div style="margin-bottom:10px"><div class="lbl" style="margin-bottom:2px">Problem that is solving</div><div style="font-size:13px;color:#1a1a2e">${f.problem}</div></div>`:''}
+    ${f.feedback_focus?`<div style="margin-bottom:10px"><div class="lbl" style="margin-bottom:2px">Feedback focus</div><div style="font-size:13px;color:#4a63e8">🎯 ${f.feedback_focus}</div></div>`:''}
+    ${f.uncertainty?`<div><div class="lbl" style="margin-bottom:2px">Biggest uncertainty</div><div style="font-size:13px;color:#888">${f.uncertainty}</div></div>`:''}
+  `;
   updateTimerDisplay('pitch');
 }
 
@@ -548,7 +557,44 @@ function switchPartTab(tab,e){
   if(e)e.target.classList.add('active');
   document.getElementById('partTab-reflection').style.display=tab==='reflection'?'block':'none';
   document.getElementById('partTab-questions').style.display=tab==='questions'?'block':'none';
+  document.getElementById('partTab-review').style.display=tab==='review'?'block':'none';
   if(tab==='questions')renderPartQList();
+  if(tab==='review')renderPartReview();
+}
+
+function renderPartFounderContext(){
+  const f=founders.length?founders[currentIdx]:null;
+  const el=document.getElementById('partFounderContext');
+  if(!el)return;
+  if(!f){el.innerHTML='';return;}
+  el.innerHTML=`
+    <div class="card" style="background:#f8f8fb;margin-bottom:1rem">
+      <div style="font-size:14px;font-weight:600;color:#1a1a2e;margin-bottom:2px">${f.name}</div>
+      <div style="font-size:12px;color:#aaa;margin-bottom:10px">${f.startup||''}${f.stage?' · '+f.stage:''}</div>
+      ${f.problem?`<div style="margin-bottom:8px"><div class="lbl" style="margin-bottom:2px">Problem that is solving</div><div style="font-size:13px;color:#1a1a2e">${f.problem}</div></div>`:''}
+      ${f.feedback_focus?`<div style="margin-bottom:8px"><div class="lbl" style="margin-bottom:2px">Feedback focus</div><div style="font-size:13px;color:#4a63e8">🎯 ${f.feedback_focus}</div></div>`:''}
+      ${f.uncertainty?`<div><div class="lbl" style="margin-bottom:2px">Biggest uncertainty</div><div style="font-size:13px;color:#888">${f.uncertainty}</div></div>`:''}
+    </div>
+  `;
+}
+
+async function renderPartReview(){
+  const f=founders.length?founders[currentIdx]:null;
+  const el=document.getElementById('partReviewContent');
+  if(!el||!f)return;
+  const {data:refs}=await sb.from('hs_reflections').select('*').eq('founder_id',f.id||'');
+  const {data:qs}=await sb.from('hs_questions').select('*').eq('founder_id',f.id||'').order('votes',{ascending:false});
+  let html='';
+  if(refs&&refs.length){
+    html+=`<div class="lbl" style="margin-bottom:8px">Biggest risks spotted by the group</div>`;
+    refs.forEach(r=>html+=`<div class="review-block">${r.answer}</div>`);
+  }
+  if(qs&&qs.length){
+    html+=`<div class="lbl" style="margin:1rem 0 8px">Questions from the group</div>`;
+    qs.forEach(q=>html+=`<div class="review-block">${q.text}${q.votes?` <span style="font-size:10px;color:#aaa">▲${q.votes}</span>`:''}</div>`);
+  }
+  if(!html)html='<p style="text-align:center;padding:1.5rem 0;color:#aaa;font-size:13px">Nothing recorded yet. Check back after the session.</p>';
+  el.innerHTML=html;
 }
 
 function toggleTimer(key){
