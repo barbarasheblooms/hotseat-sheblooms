@@ -554,8 +554,22 @@ function renderQuestionBank(){
   ).join('');
 }
 
-function toggleQ(i){usedQs.has(i)?usedQs.delete(i):usedQs.add(i);const el=document.getElementById('qitem-'+i);if(el)el.className=`q-item ${usedQs.has(i)?'used':''}`;}
-
+async function toggleQ(i){
+  const f=founders[currentIdx];
+  if(usedQs.has(i)){
+    usedQs.delete(i);
+    // Remove from DB
+    if(f&&f.id)await sb.from('hs_questions').delete().eq('founder_id',f.id).eq('bank_idx',i);
+  } else {
+    usedQs.add(i);
+    // Save to DB so participants can see it
+    if(f&&f.id){
+      const q=QUESTIONS[i];
+      await sb.from('hs_questions').insert({session_id:sessionId,founder_id:f.id,text:q.text,votes:0,bank_idx:i,is_bank:true});
+    }
+  }
+  const el=document.getElementById('qitem-'+i);if(el)el.className=`q-item ${usedQs.has(i)?'used':''}`;
+}
 function switchAdminTab(tab,e){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   if(e)e.target.classList.add('active');
@@ -662,15 +676,28 @@ async function submitPartQ(){
 }
 
 async function renderPartReview(){
-  const f=founders.length?founders[currentIdx]:null;
-  const el=document.getElementById('partReviewContent');if(!el||!f)return;
-  const {data:refs}=await sb.from('hs_reflections').select('*').eq('founder_id',f.id||'');
-  const {data:qs}=await sb.from('hs_questions').select('*').eq('founder_id',f.id||'').order('votes',{ascending:false});
+  const el=document.getElementById('partReviewContent');if(!el)return;
+  if(!founders.length){el.innerHTML='<p style="text-align:center;padding:1.5rem 0;color:#aaa;font-size:13px">Nothing recorded yet.</p>';return;}
+  el.innerHTML='<div class="loader">Loading...</div>';
   let html='';
-  if(refs&&refs.length){html+=`<div class="lbl" style="margin-bottom:8px">Biggest risks spotted</div>`;refs.forEach(r=>html+=`<div class="review-block">${r.answer}</div>`);}
-  if(qs&&qs.length){html+=`<div class="lbl" style="margin:1rem 0 8px">Questions from the group</div>`;qs.forEach(q=>html+=`<div class="review-block">${q.text}${q.votes?` <span style="font-size:10px;color:#aaa">▲${q.votes}</span>`:''}</div>`);}
-  if(!html)html='<p style="text-align:center;padding:1.5rem 0;color:#aaa;font-size:13px">Nothing recorded yet.</p>';
-  el.innerHTML=html;
+  for(const f of founders){
+    const {data:refs}=await sb.from('hs_reflections').select('*').eq('founder_id',f.id||'');
+    const {data:qs}=await sb.from('hs_questions').select('*').eq('founder_id',f.id||'').order('is_bank').order('votes',{ascending:false});
+    const liveQs=(qs||[]).filter(q=>!q.is_bank);
+    const bankQs=(qs||[]).filter(q=>q.is_bank);
+    html+=`<div style="margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:0.5px solid #e2e2ea">
+      <div style="font-size:15px;font-weight:600;color:#1a1a2e;margin-bottom:2px">${f.name}</div>
+      <div style="font-size:12px;color:#aaa;margin-bottom:10px">${f.startup||''}${f.stage?' · '+f.stage:''}</div>
+      ${f.problem?`<div style="margin-bottom:8px"><div class="lbl" style="margin-bottom:2px">Problem that is solving</div><div style="font-size:13px;color:#1a1a2e">${f.problem}</div></div>`:''}
+      ${f.feedback_focus?`<div style="margin-bottom:8px"><div class="lbl" style="margin-bottom:2px">Feedback focus</div><div style="font-size:13px;color:#1a1a2e">${f.feedback_focus}</div></div>`:''}
+    `;
+    if(refs&&refs.length){html+=`<div class="lbl" style="margin:10px 0 6px">Biggest risks spotted</div>`;refs.forEach(r=>html+=`<div class="review-block">${r.answer}</div>`);}
+    if(liveQs.length){html+=`<div class="lbl" style="margin:10px 0 6px">Questions from the group</div>`;liveQs.forEach(q=>html+=`<div class="review-block">${q.text}${q.votes?` <span style="font-size:10px;color:#aaa">▲${q.votes}</span>`:''}</div>`);}
+    if(bankQs.length){html+=`<div class="lbl" style="margin:10px 0 6px">Questions from the bank</div>`;bankQs.forEach(q=>html+=`<div class="review-block">${q.text}</div>`);}
+    if((!refs||!refs.length)&&!liveQs.length&&!bankQs.length)html+=`<p style="font-size:12px;color:#aaa;padding:6px 0">No feedback recorded yet.</p>`;
+    html+='</div>';
+  }
+  el.innerHTML=html||'<p style="text-align:center;padding:1.5rem 0;color:#aaa;font-size:13px">Nothing recorded yet.</p>';
 }
 
 function switchPartTab(tab,e){
