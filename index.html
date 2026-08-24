@@ -187,7 +187,7 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
   <div id="adminScreen-3" class="admin-screen" style="display:none">
     <div class="silence-box">
       <div style="font-size:10px;font-weight:600;color:#4a63e8;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.08em">Structured silence</div>
-      <div class="timer-big" id="silenceTimer" style="font-size:44px;color:#3730a3;padding:0.25rem 0">5:00</div>
+      <div class="timer-big" id="silenceTimer" style="font-size:44px;color:#3730a3;padding:0.25rem 0">3:00</div>
       <p style="font-size:13px;color:#4a63e8">Everyone writes before anyone speaks.</p>
     </div>
     <div class="card">
@@ -260,12 +260,7 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
   <div id="partTab-reflection">
     <div class="silence-box">
       <div style="font-size:10px;font-weight:600;color:#4a63e8;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.08em">Structured silence</div>
-      <div class="timer-big" id="partSilenceTimer" style="font-size:40px;color:#3730a3;padding:0.25rem 0">3:00</div>
-      <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
-        <button class="btn btn-sm" onclick="togglePartTimer()" style="background:#4a63e8;color:#fff;border-color:#4a63e8"><span id="partSilenceBtnLabel">▶ Start</span></button>
-        <button class="btn btn-sm" onclick="resetPartTimer()">↺</button>
-      </div>
-      <p style="font-size:14px;font-weight:600;color:#3730a3;margin-top:12px">What is the biggest risk you see in this business?</p>
+      <p style="font-size:14px;font-weight:600;color:#3730a3">What is the biggest risk you see in this business?</p>
     </div>
     <div class="card">
       <div class="field"><div class="lbl">Your answer (anonymous)</div>
@@ -329,8 +324,8 @@ const QUESTIONS=[
 let isAdmin=false,adminId=null,sessionId=null,partPin='';
 let founders=[],localFounders=[],currentIdx=0,usedQs=new Set();
 let timers={pitch:null,silence:null,q:null};
-let timeLeft={pitch:300,silence:300,q:600};
-let totalTime={pitch:300,silence:300,q:600};
+let timeLeft={pitch:300,silence:180,q:600};
+let totalTime={pitch:300,silence:180,q:600};
 let running={pitch:false,silence:false,q:false};
 let voterToken=localStorage.getItem('hs_voter')||(()=>{const t=Math.random().toString(36).slice(2,10);localStorage.setItem('hs_voter',t);return t;})();
 let realtimeSub=null;
