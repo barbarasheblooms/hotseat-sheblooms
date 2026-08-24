@@ -251,20 +251,32 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
 <!-- SCREEN: Participant -->
 <div class="screen" id="screen-participant">
   <div class="logo"><div><div class="logo-text">SheBlooms</div><div class="logo-sub" id="partSessionLabel">Founders' Hot Seat</div></div></div>
-  <div class="card" style="margin-bottom:1rem">
+
+  <!-- Closed session banner -->
+  <div id="partClosedBanner" style="display:none;background:#f1f1f6;border-radius:10px;padding:10px 14px;margin-bottom:1rem;font-size:13px;color:#888;text-align:center">
+    This session is closed. You can view the session history below.
+  </div>
+
+  <!-- Rules (hidden when closed) -->
+  <div id="partRulesCard" class="card" style="margin-bottom:1rem">
     <h3 style="margin-bottom:10px">Session rules</h3>
     <div class="rule-item"><div class="rule-num">1</div><span>The founder in the seat <strong>does not defend</strong>. She only responds.</span></div>
     <div class="rule-item"><div class="rule-num">2</div><span>Vague feedback doesn't count. "I found it confusing" must come with "confusing because…"</span></div>
     <div class="rule-item"><div class="rule-num">3</div><span>During reflection, everyone writes before anyone speaks.</span></div>
     <div class="rule-item"><div class="rule-num">4</div><span>What happens in the Hot Seat <strong>stays in the Hot Seat</strong>.</span></div>
   </div>
+
+  <!-- Founder context -->
   <div id="partFounderContext"></div>
-  <div class="tab-row" style="justify-content:center">
-    <div class="tab active" onclick="switchPartTab('reflection',event)">Reflection</div>
-    <div class="tab" onclick="switchPartTab('questions',event)">Questions</div>
-    <div class="tab" onclick="switchPartTab('feedback',event)">Feedback</div>
-    <div class="tab" onclick="switchPartTab('review',event)">Review</div>
+
+  <!-- Tabs — locked until submitted -->
+  <div id="partTabsRow" class="tab-row" style="justify-content:center">
+    <div class="tab active" id="tabReflection" onclick="switchPartTab('reflection',event)">Reflection</div>
+    <div class="tab" id="tabQuestions" style="opacity:0.4;pointer-events:none">Questions</div>
+    <div class="tab" id="tabFeedback" style="opacity:0.4;pointer-events:none">Feedback</div>
+    <div class="tab" id="tabReview" style="opacity:0.4;pointer-events:none">Review</div>
   </div>
+
   <div id="partTab-reflection">
     <div class="silence-box">
       <div style="font-size:10px;font-weight:600;color:#4a63e8;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.08em">Structured silence</div>
@@ -275,7 +287,7 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
         <textarea id="partRefAnswer" placeholder="Be specific. Vague answers won't be read aloud..." style="min-height:100px"></textarea>
       </div>
       <button class="btn btn-primary" onclick="submitPartRef()" style="width:100%">Submit →</button>
-      <div id="partRefConfirm" style="display:none;margin-top:10px;padding:10px;background:#e8f5ee;border-radius:10px;font-size:13px;color:#2a7a56;text-align:center">✓ Answer submitted anonymously.</div>
+      <div id="partRefConfirm" style="display:none;margin-top:10px;padding:10px;background:#e8f5ee;border-radius:10px;font-size:13px;color:#2a7a56;text-align:center">✓ Answer submitted. You can now go to Questions.</div>
     </div>
   </div>
   <div id="partTab-questions" style="display:none">
@@ -285,6 +297,7 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
         <input id="partQText" type="text" placeholder="Your question for the founder...">
         <button class="btn btn-primary btn-sm" onclick="submitPartQ()">Send</button>
       </div>
+      <div id="partQSubmitConfirm" style="display:none;margin-bottom:10px;padding:8px 10px;background:#e8f5ee;border-radius:10px;font-size:12px;color:#2a7a56;text-align:center">✓ Question submitted. You can now go to Feedback.</div>
       <div class="divider"></div>
       <h3 style="margin-bottom:4px">Vote on questions</h3>
       <p style="margin-bottom:1rem">Upvote the ones you most want answered.</p>
@@ -299,7 +312,7 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
         <textarea id="partFeedbackAnswer" placeholder="Your additional feedback..." style="min-height:120px"></textarea>
       </div>
       <button class="btn btn-primary" onclick="submitPartFeedback()" style="width:100%">Submit →</button>
-      <div id="partFeedbackConfirm" style="display:none;margin-top:10px;padding:10px;background:#e8f5ee;border-radius:10px;font-size:13px;color:#2a7a56;text-align:center">✓ Feedback submitted.</div>
+      <div id="partFeedbackConfirm" style="display:none;margin-top:10px;padding:10px;background:#e8f5ee;border-radius:10px;font-size:13px;color:#2a7a56;text-align:center">✓ Feedback submitted. You can now see the Review.</div>
     </div>
   </div>
   <div id="partTab-review" style="display:none">
@@ -360,16 +373,20 @@ async function enterPin(){
   const {data:sessData}=await sb.from('hs_sessions').select('*').eq('participant_pin',pin).order('created_at',{ascending:false}).limit(1);
   if(sessData&&sessData.length){
     isAdmin=false;
-    sessionId=sessData[0].id;
-    partPin=sessData[0].participant_pin;
-    currentIdx=sessData[0].current_founder_idx||0;
-    const label=sessData[0].name||'Founders\' Hot Seat';
+    const sess=sessData[0];
+    sessionId=sess.id;
+    partPin=sess.participant_pin;
+    currentIdx=sess.current_founder_idx||0;
+    const label=sess.name||'Founders\' Hot Seat';
     document.getElementById('partSessionLabel').textContent=label;
     await loadFoundersFromDB();
     subscribeRealtime();
     showScreen('screen-participant');
-    renderPartFounderContext();
-    renderPartQList();
+    if(sess.status==='closed'){
+      showClosedParticipant();
+    } else {
+      showActiveParticipant();
+    }
     return;
   }
 
@@ -540,6 +557,7 @@ function subscribeRealtime(){
     })
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'hs_sessions'},(payload)=>{
       if(payload.new&&payload.new.id===sessionId&&!isAdmin){
+        if(payload.new.status==='closed'){showClosedParticipant();return;}
         const newIdx=payload.new.current_founder_idx;
         if(newIdx!==undefined&&newIdx!==currentIdx){currentIdx=newIdx;syncParticipant();}
       }
@@ -551,9 +569,12 @@ function subscribeRealtime(){
     if(!sessionId)return;
     if(isAdmin){loadAdminLiveQs();loadAdminReflections();}
     else{
-      const {data}=await sb.from('hs_sessions').select('current_founder_idx').eq('id',sessionId).single();
-      if(data&&data.current_founder_idx!==null&&data.current_founder_idx!==currentIdx){currentIdx=data.current_founder_idx;syncParticipant();}
-      else renderPartQList();
+      const {data}=await sb.from('hs_sessions').select('current_founder_idx,status').eq('id',sessionId).single();
+      if(data){
+        if(data.status==='closed'&&document.getElementById('partClosedBanner').style.display==='none'){showClosedParticipant();return;}
+        if(data.current_founder_idx!==null&&data.current_founder_idx!==currentIdx){currentIdx=data.current_founder_idx;syncParticipant();}
+        else renderPartQList();
+      }
     }
   },3000);
 }
@@ -564,11 +585,10 @@ function syncParticipant(){
   const ans=document.getElementById('partRefAnswer');if(ans)ans.value='';
   const conf=document.getElementById('partRefConfirm');if(conf)conf.style.display='none';
   const fconf=document.getElementById('partFeedbackConfirm');if(fconf)fconf.style.display='none';
-  document.querySelectorAll('#screen-participant .tab').forEach((t,i)=>t.classList.toggle('active',i===0));
-  document.getElementById('partTab-reflection').style.display='block';
-  document.getElementById('partTab-questions').style.display='none';
-  document.getElementById('partTab-feedback').style.display='none';
-  document.getElementById('partTab-review').style.display='none';
+  const qconf=document.getElementById('partQSubmitConfirm');if(qconf)qconf.style.display='none';
+  lockTab('tabQuestions');lockTab('tabFeedback');lockTab('tabReview');
+  unlockTab('tabReflection',true);
+  switchPartTab('reflection',null);
 }
 
 // --- ADMIN REFLECTION ---
@@ -673,6 +693,44 @@ async function nextFounder(){
   }
 }
 
+// --- PARTICIPANT MODES ---
+function showActiveParticipant(){
+  document.getElementById('partClosedBanner').style.display='none';
+  document.getElementById('partRulesCard').style.display='block';
+  document.getElementById('partFounderContext').style.display='block';
+  document.getElementById('partTabsRow').style.display='flex';
+  lockTab('tabQuestions');lockTab('tabFeedback');lockTab('tabReview');
+  unlockTab('tabReflection',true);
+  switchPartTab('reflection',null);
+  renderPartFounderContext();
+}
+
+function showClosedParticipant(){
+  document.getElementById('partClosedBanner').style.display='block';
+  document.getElementById('partRulesCard').style.display='none';
+  document.getElementById('partFounderContext').style.display='none';
+  document.getElementById('partTabsRow').style.display='none';
+  document.getElementById('partTab-reflection').style.display='none';
+  document.getElementById('partTab-questions').style.display='none';
+  document.getElementById('partTab-feedback').style.display='none';
+  document.getElementById('partTab-review').style.display='block';
+  renderPartReview();
+}
+
+function lockTab(id){
+  const el=document.getElementById(id);if(!el)return;
+  el.style.opacity='0.4';el.style.pointerEvents='none';el.onclick=null;el.classList.remove('active');
+}
+
+function unlockTab(id,active){
+  const el=document.getElementById(id);if(!el)return;
+  el.style.opacity='1';el.style.pointerEvents='auto';
+  const tabMap={tabReflection:'reflection',tabQuestions:'questions',tabFeedback:'feedback',tabReview:'review'};
+  const tab=tabMap[id];
+  el.onclick=(e)=>switchPartTab(tab,e);
+  if(active){document.querySelectorAll('#screen-participant .tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');}
+}
+
 // --- PARTICIPANT ---
 function renderPartFounderContext(){
   const f=founders.length?founders[currentIdx]:null;
@@ -681,7 +739,10 @@ function renderPartFounderContext(){
   el.innerHTML=`
     <div class="card" style="background:#f8f8fb;margin-bottom:1rem">
       <div style="font-size:14px;font-weight:600;color:#1a1a2e;margin-bottom:2px">${f.name}</div>
-      <div style="font-size:12px;color:#aaa;">${f.startup||''}${f.stage?' · '+f.stage:''}</div>
+      <div style="font-size:12px;color:#aaa;margin-bottom:${f.problem||f.feedback_focus||f.uncertainty?'10px':'0'}">${f.startup||''}${f.stage?' · '+f.stage:''}</div>
+      ${f.problem?`<div style="margin-bottom:8px"><div class="lbl" style="margin-bottom:2px">Problem that is solving</div><div style="font-size:13px;color:#1a1a2e">${f.problem}</div></div>`:''}
+      ${f.feedback_focus?`<div style="margin-bottom:8px"><div class="lbl" style="margin-bottom:2px">Feedback focus</div><div style="font-size:13px;color:#1a1a2e">${f.feedback_focus}</div></div>`:''}
+      ${f.uncertainty?`<div><div class="lbl" style="margin-bottom:2px">Biggest uncertainty</div><div style="font-size:13px;color:#1a1a2e">${f.uncertainty}</div></div>`:''}
     </div>
   `;
 }
@@ -689,11 +750,11 @@ function renderPartFounderContext(){
 async function renderPartQList(){
   if(!sessionId)return;
   const f=founders.length?founders[currentIdx]:null;
-  let query=sb.from('hs_questions').select('*').eq('session_id',sessionId);
+  let query=sb.from('hs_questions').select('*').eq('session_id',sessionId).eq('is_bank',false);
   if(f&&f.id)query=query.eq('founder_id',f.id);
   const {data}=await query.order('votes',{ascending:false});
   const el=document.getElementById('partQList');if(!el)return;
-  const qs=data||[];
+  const qs=(data||[]).filter(q=>!q.text.startsWith('[Additional feedback]'));
   if(!qs.length){el.innerHTML='<p style="font-size:12px;color:#aaa;text-align:center;padding:1rem 0">No questions yet. Submit the first one!</p>';return;}
   const {data:myVotes}=await sb.from('hs_votes').select('question_id').eq('voter_token',voterToken);
   const votedIds=new Set((myVotes||[]).map(v=>v.question_id));
@@ -713,14 +774,17 @@ async function submitPartRef(){
   await sb.from('hs_reflections').insert({session_id:sessionId,founder_id:f?.id||null,answer});
   document.getElementById('partRefAnswer').value='';
   document.getElementById('partRefConfirm').style.display='block';
+  unlockTab('tabQuestions',false);
 }
 
 async function submitPartQ(){
   const text=document.getElementById('partQText').value.trim();if(!text)return;
   const f=founders.length?founders[currentIdx]:null;
-  await sb.from('hs_questions').insert({session_id:sessionId,founder_id:f?.id||null,text,votes:0});
+  await sb.from('hs_questions').insert({session_id:sessionId,founder_id:f?.id||null,text,votes:0,is_bank:false});
   document.getElementById('partQText').value='';
+  const qconf=document.getElementById('partQSubmitConfirm');if(qconf)qconf.style.display='block';
   renderPartQList();
+  unlockTab('tabFeedback',false);
 }
 
 async function renderPartReview(){
@@ -730,45 +794,29 @@ async function renderPartReview(){
   let html='';
   for(const f of founders){
     const {data:refs}=await sb.from('hs_reflections').select('*').eq('founder_id',f.id||'');
-    const {data:qs}=await sb.from('hs_questions').select('*').eq('founder_id',f.id||'').order('is_bank').order('votes',{ascending:false});
-    const liveQs=(qs||[]).filter(q=>!q.is_bank);
+    const {data:qs}=await sb.from('hs_questions').select('*').eq('founder_id',f.id||'').order('votes',{ascending:false});
+    const liveQs=(qs||[]).filter(q=>!q.is_bank&&!q.text.startsWith('[Additional feedback]'));
     const bankQs=(qs||[]).filter(q=>q.is_bank);
+    const extraQs=(qs||[]).filter(q=>q.text.startsWith('[Additional feedback]'));
     html+=`<div style="margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:0.5px solid #e2e2ea">
       <div style="font-size:15px;font-weight:600;color:#1a1a2e;margin-bottom:2px">${f.name}</div>
-      <div style="font-size:12px;color:#aaa;margin-bottom:10px">${f.startup||''}${f.stage?' · '+f.stage:''}</div>
+      <div style="font-size:12px;color:#aaa;margin-bottom:${f.problem?'10px':'2px'}">${f.startup||''}${f.stage?' · '+f.stage:''}</div>
+      ${f.problem?`<div style="margin-bottom:6px"><div class="lbl" style="margin-bottom:2px">Problem that is solving</div><div style="font-size:13px;color:#1a1a2e">${f.problem}</div></div>`:''}
+      ${f.feedback_focus?`<div style="margin-bottom:10px"><div class="lbl" style="margin-bottom:2px">Feedback focus</div><div style="font-size:13px;color:#1a1a2e">${f.feedback_focus}</div></div>`:''}
     `;
     if(refs&&refs.length){html+=`<div class="lbl" style="margin:10px 0 6px">Biggest risks spotted</div>`;refs.forEach(r=>html+=`<div class="review-block">${r.answer}</div>`);}
     if(liveQs.length){html+=`<div class="lbl" style="margin:10px 0 6px">Questions from the group</div>`;liveQs.forEach(q=>html+=`<div class="review-block">${q.text}${q.votes?` <span style="font-size:10px;color:#aaa">▲${q.votes}</span>`:''}</div>`);}
     if(bankQs.length){html+=`<div class="lbl" style="margin:10px 0 6px">Questions from the bank</div>`;bankQs.forEach(q=>html+=`<div class="review-block">${q.text}</div>`);}
-    if((!refs||!refs.length)&&!liveQs.length&&!bankQs.length)html+=`<p style="font-size:12px;color:#aaa;padding:6px 0">No feedback recorded yet.</p>`;
+    if(extraQs.length){html+=`<div class="lbl" style="margin:10px 0 6px">Additional feedback</div>`;extraQs.forEach(q=>html+=`<div class="review-block">${q.text.replace('[Additional feedback] ','')}</div>`);}
+    if((!refs||!refs.length)&&!liveQs.length&&!bankQs.length&&!extraQs.length)html+=`<p style="font-size:12px;color:#aaa;padding:6px 0">No feedback recorded yet.</p>`;
     html+='</div>';
   }
   el.innerHTML=html||'<p style="text-align:center;padding:1.5rem 0;color:#aaa;font-size:13px">Nothing recorded yet.</p>';
 }
 
 let partSilenceLeft=180,partSilenceRunning=false,partSilenceTimer=null;
-
-function togglePartTimer(){
-  if(partSilenceRunning){
-    clearInterval(partSilenceTimer);partSilenceRunning=false;
-    document.getElementById('partSilenceBtnLabel').textContent='▶ Resume';
-  } else {
-    partSilenceRunning=true;
-    document.getElementById('partSilenceBtnLabel').textContent='⏸ Pause';
-    partSilenceTimer=setInterval(()=>{
-      if(partSilenceLeft<=0){clearInterval(partSilenceTimer);partSilenceRunning=false;return;}
-      partSilenceLeft--;
-      const m=Math.floor(partSilenceLeft/60),s=partSilenceLeft%60;
-      document.getElementById('partSilenceTimer').textContent=m+':'+String(s).padStart(2,'0');
-    },1000);
-  }
-}
-
-function resetPartTimer(){
-  clearInterval(partSilenceTimer);partSilenceRunning=false;partSilenceLeft=180;
-  document.getElementById('partSilenceTimer').textContent='3:00';
-  document.getElementById('partSilenceBtnLabel').textContent='▶ Start';
-}
+function togglePartTimer(){if(partSilenceRunning){clearInterval(partSilenceTimer);partSilenceRunning=false;}else{partSilenceRunning=true;partSilenceTimer=setInterval(()=>{if(partSilenceLeft<=0){clearInterval(partSilenceTimer);partSilenceRunning=false;return;}partSilenceLeft--;},1000);}}
+function resetPartTimer(){clearInterval(partSilenceTimer);partSilenceRunning=false;partSilenceLeft=180;}
 
 async function submitPartFeedback(){
   const text=document.getElementById('partFeedbackAnswer').value.trim();
@@ -777,11 +825,13 @@ async function submitPartFeedback(){
   await sb.from('hs_questions').insert({session_id:sessionId,founder_id:f?.id||null,text:'[Additional feedback] '+text,votes:0,is_bank:false});
   document.getElementById('partFeedbackAnswer').value='';
   document.getElementById('partFeedbackConfirm').style.display='block';
+  unlockTab('tabReview',false);
 }
 
 function switchPartTab(tab,e){
   document.querySelectorAll('#screen-participant .tab').forEach(t=>t.classList.remove('active'));
   if(e)e.target.classList.add('active');
+  else{const m={reflection:'tabReflection',questions:'tabQuestions',feedback:'tabFeedback',review:'tabReview'};const el=document.getElementById(m[tab]);if(el)el.classList.add('active');}
   document.getElementById('partTab-reflection').style.display=tab==='reflection'?'block':'none';
   document.getElementById('partTab-questions').style.display=tab==='questions'?'block':'none';
   document.getElementById('partTab-feedback').style.display=tab==='feedback'?'block':'none';
@@ -789,6 +839,7 @@ function switchPartTab(tab,e){
   if(tab==='questions')renderPartQList();
   if(tab==='review')renderPartReview();
 }
+
 
 // --- TIMERS ---
 function toggleTimer(key){
