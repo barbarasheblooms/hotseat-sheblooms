@@ -688,8 +688,6 @@ async function renderPartReview(){
     html+=`<div style="margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:0.5px solid #e2e2ea">
       <div style="font-size:15px;font-weight:600;color:#1a1a2e;margin-bottom:2px">${f.name}</div>
       <div style="font-size:12px;color:#aaa;margin-bottom:10px">${f.startup||''}${f.stage?' · '+f.stage:''}</div>
-      ${f.problem?`<div style="margin-bottom:8px"><div class="lbl" style="margin-bottom:2px">Problem that is solving</div><div style="font-size:13px;color:#1a1a2e">${f.problem}</div></div>`:''}
-      ${f.feedback_focus?`<div style="margin-bottom:8px"><div class="lbl" style="margin-bottom:2px">Feedback focus</div><div style="font-size:13px;color:#1a1a2e">${f.feedback_focus}</div></div>`:''}
     `;
     if(refs&&refs.length){html+=`<div class="lbl" style="margin:10px 0 6px">Biggest risks spotted</div>`;refs.forEach(r=>html+=`<div class="review-block">${r.answer}</div>`);}
     if(liveQs.length){html+=`<div class="lbl" style="margin:10px 0 6px">Questions from the group</div>`;liveQs.forEach(q=>html+=`<div class="review-block">${q.text}${q.votes?` <span style="font-size:10px;color:#aaa">▲${q.votes}</span>`:''}</div>`);}
