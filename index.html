@@ -188,6 +188,7 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
     <div class="silence-box">
       <div style="font-size:10px;font-weight:600;color:#4a63e8;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.08em">Structured silence</div>
       <div class="timer-big" id="silenceTimer" style="font-size:44px;color:#3730a3;padding:0.25rem 0">3:00</div>
+      <div class="pbar" style="margin:6px 0 10px"><div class="pfill" id="silenceProgress" style="width:100%;background:#4a63e8"></div></div>
       <p style="font-size:13px;color:#4a63e8">Everyone writes before anyone speaks.</p>
     </div>
     <div class="card">
@@ -489,7 +490,7 @@ function adminGoTo(n){
   const pillIdx=pillMap[n]??0;
   document.querySelectorAll('.pill').forEach((p,i)=>{p.classList.remove('active','done');if(i<pillIdx)p.classList.add('done');if(i===pillIdx)p.classList.add('active');});
   if(n===2)renderPitchScreen();
-  if(n===3){loadAdminReflections();subscribeRealtime();}
+  if(n===3){updateTimerDisplay('silence');loadAdminReflections();subscribeRealtime();}
   if(n===4){renderQuestionBank();loadAdminLiveQs();subscribeRealtime();}
   if(n===5)renderAdminReview();
 }
@@ -772,7 +773,10 @@ function toggleTimer(key){
 function updateTimerDisplay(key){
   const t=timeLeft[key],str=Math.floor(t/60)+':'+String(t%60).padStart(2,'0'),pct=Math.round((t/totalTime[key])*100);
   if(key==='pitch'){const el=document.getElementById('pitchTimer');el.textContent=str;el.className='timer-big'+(t<=60?' danger':t<=90?' warn':'');document.getElementById('pitchProgress').style.width=pct+'%';}
-  else if(key==='silence')document.getElementById('silenceTimer').textContent=str;
+  else if(key==='silence'){
+    document.getElementById('silenceTimer').textContent=str;
+    const sp=document.getElementById('silenceProgress');if(sp)sp.style.width=pct+'%';
+  }
   else document.getElementById('qTimer').textContent=str;
 }
 function resetTimer(key){clearInterval(timers[key]);running[key]=false;timeLeft[key]=totalTime[key];updateTimerDisplay(key);const id=key==='q'?'qBtnLabel':key+'BtnLabel';document.getElementById(id).textContent=key==='q'?'▶':'▶ Start';}
