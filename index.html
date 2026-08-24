@@ -396,7 +396,7 @@ async function createSession(){
   if(!pin){document.getElementById('createSessionError').style.display='block';return;}
   document.getElementById('createSessionError').style.display='none';
   const {data,error}=await sb.from('hs_sessions').insert({admin_id:adminId,participant_pin:pin,name:name||null,current_founder_idx:0}).select().single();
-  if(error){alert('Error creating session. PIN may already be in use.');return;}
+  if(error){alert('Error: '+error.message+' | Code: '+error.code);return;}
   document.getElementById('sessionName').value='';
   document.getElementById('newPartPin').value='';
   openAdminSession(data.id,data.participant_pin,data.name||'');
