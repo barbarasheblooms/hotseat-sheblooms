@@ -459,14 +459,29 @@ function renderAdminQList(qs){
 
 function subscribeToQuestions(){
   if(realtimeSub)sb.removeChannel(realtimeSub);
+  
+  // Realtime subscription
   realtimeSub=sb.channel('hs-realtime-'+sessionId)
-    .on('postgres_changes',{event:'*',schema:'public',table:'hs_questions'},()=>{
+    .on('postgres_changes',{event:'*',schema:'public',table:'hs_questions',filter:`session_id=eq.${sessionId}`},()=>{
       if(isAdmin)loadAdminLiveQs();else renderPartQList();
     })
-    .on('postgres_changes',{event:'*',schema:'public',table:'hs_reflections'},()=>{
-      if(isAdmin)loadAdminReflections();
+    .on('postgres_changes',{event:'*',schema:'public',table:'hs_reflections',filter:`session_id=eq.${sessionId}`},()=>{
+      if(isAdmin)loadAdminReflections();else renderPartReview();
     })
-    .subscribe();
+    .subscribe((status)=>{
+      console.log('Realtime status:', status);
+    });
+
+  // Polling fallback every 5 seconds to guarantee sync
+  if(window._pollInterval)clearInterval(window._pollInterval);
+  window._pollInterval=setInterval(()=>{
+    if(isAdmin){
+      loadAdminLiveQs();
+      loadAdminReflections();
+    } else {
+      renderPartQList();
+    }
+  }, 5000);
 }
 
 async function renderPartQList(){
