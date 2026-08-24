@@ -141,7 +141,10 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
         <button class="btn btn-sm" onclick="copyPartPin()">Copy PIN</button>
       </div>
       <div id="founderSlots"></div>
-      <button class="btn btn-sm" onclick="addSlot()" style="margin-bottom:1rem">+ Add founder</button>
+      <div style="display:flex;gap:8px;margin-bottom:1rem">
+        <button class="btn btn-sm" onclick="addSlot()">+ Add founder</button>
+        <button class="btn btn-sm btn-danger" onclick="clearAllFounders()">Clear all</button>
+      </div>
       <div class="divider"></div>
       <button class="btn btn-primary" onclick="saveFounders()" style="width:100%">Start session →</button>
     </div>
@@ -354,8 +357,17 @@ function addSlot(){localFounders.push({name:'',startup:'',stage:'',problem:'',fe
 function updateLocal(i,field,val){localFounders[i][field]=val;}
 async function removeSlot(i){
   const f=localFounders[i];
-  if(f.id){await sb.from('hs_founders').delete().eq('id',f.id);}
+  if(f.id){
+    await sb.from('hs_founders').delete().eq('id',f.id);
+  }
   localFounders.splice(i,1);
+  renderSlots();
+}
+
+async function clearAllFounders(){
+  if(!confirm('Remove all founders from this session?'))return;
+  await sb.from('hs_founders').delete().eq('session_id',sessionId);
+  localFounders=[];founders=[];
   renderSlots();
 }
 
