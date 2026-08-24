@@ -324,7 +324,11 @@ async function enterPin(){
     document.getElementById('setupPartPin').textContent=sess.participant_pin;
     await loadFoundersFromDB();renderSlots();showScreen('screen-setup');
   } else {
-    await loadFoundersFromDB();subscribeToQuestions();showScreen('screen-participant');renderPartFounderContext();renderPartQList();
+    await loadFoundersFromDB();
+    // Sync current founder index from session
+    const {data:sessData}=await sb.from('hs_sessions').select('current_founder_idx').eq('id',sessionId).single();
+    if(sessData && sessData.current_founder_idx !== null) currentIdx=sessData.current_founder_idx;
+    subscribeToQuestions();showScreen('screen-participant');renderPartFounderContext();renderPartQList();
   }
 }
 
@@ -461,8 +465,7 @@ function renderAdminQList(qs){
 
 function subscribeToQuestions(){
   if(realtimeSub)sb.removeChannel(realtimeSub);
-  
-  // Realtime subscription
+
   realtimeSub=sb.channel('hs-realtime-'+sessionId)
     .on('postgres_changes',{event:'*',schema:'public',table:'hs_questions',filter:`session_id=eq.${sessionId}`},()=>{
       if(isAdmin)loadAdminLiveQs();else renderPartQList();
@@ -470,17 +473,42 @@ function subscribeToQuestions(){
     .on('postgres_changes',{event:'*',schema:'public',table:'hs_reflections',filter:`session_id=eq.${sessionId}`},()=>{
       if(isAdmin)loadAdminReflections();else renderPartReview();
     })
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'hs_sessions',filter:`id=eq.${sessionId}`},(payload)=>{
+      if(!isAdmin && payload.new && payload.new.current_founder_idx !== undefined){
+        currentIdx = payload.new.current_founder_idx;
+        renderPartFounderContext();
+        renderPartQList();
+        // Reset participant reflection form
+        const ans=document.getElementById('partRefAnswer');if(ans)ans.value='';
+        const conf=document.getElementById('partRefConfirm');if(conf)conf.style.display='none';
+        // Switch back to reflection tab
+        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+        const tabs=document.querySelectorAll('.tab');if(tabs[0])tabs[0].classList.add('active');
+        document.getElementById('partTab-reflection').style.display='block';
+        document.getElementById('partTab-questions').style.display='none';
+        document.getElementById('partTab-review').style.display='none';
+      }
+    })
     .subscribe((status)=>{
       console.log('Realtime status:', status);
     });
 
-  // Polling fallback every 5 seconds to guarantee sync
+  // Polling fallback every 5 seconds
   if(window._pollInterval)clearInterval(window._pollInterval);
-  window._pollInterval=setInterval(()=>{
+  window._pollInterval=setInterval(async()=>{
     if(isAdmin){
       loadAdminLiveQs();
       loadAdminReflections();
     } else {
+      // Check if founder changed
+      const {data}=await sb.from('hs_sessions').select('current_founder_idx').eq('id',sessionId).single();
+      if(data && data.current_founder_idx !== null && data.current_founder_idx !== currentIdx){
+        currentIdx=data.current_founder_idx;
+        renderPartFounderContext();
+        renderPartQList();
+        const ans=document.getElementById('partRefAnswer');if(ans)ans.value='';
+        const conf=document.getElementById('partRefConfirm');if(conf)conf.style.display='none';
+      }
       renderPartQList();
     }
   }, 5000);
@@ -561,9 +589,17 @@ async function copyReview(){
   navigator.clipboard.writeText(txt).then(()=>{const b=event.target;const o=b.innerHTML;b.textContent='Copied!';setTimeout(()=>b.innerHTML=o,1800);});
 }
 
-function nextFounder(){
-  if(currentIdx<founders.length-1){currentIdx++;usedQs.clear();Object.keys(timeLeft).forEach(k=>{timeLeft[k]=totalTime[k];clearInterval(timers[k]);running[k]=false;});adminGoTo(2);}
-  else alert('All founders have presented. Great session!');
+async function nextFounder(){
+  if(currentIdx<founders.length-1){
+    currentIdx++;
+    usedQs.clear();
+    Object.keys(timeLeft).forEach(k=>{timeLeft[k]=totalTime[k];clearInterval(timers[k]);running[k]=false;});
+    // Save current founder index to session so participants sync
+    await sb.from('hs_sessions').update({current_founder_idx:currentIdx}).eq('id',sessionId);
+    adminGoTo(2);
+  } else {
+    alert('All founders have presented. Great session!');
+  }
 }
 
 function resetAll(){if(confirm('Start a new session?')){sessionId=null;isAdmin=false;founders=[];localFounders=[];currentIdx=0;usedQs.clear();reflections={};Object.keys(timeLeft).forEach(k=>{timeLeft[k]=totalTime[k];clearInterval(timers[k]);running[k]=false;});document.getElementById('pinInput').value='';showScreen('screen-entry');}}
