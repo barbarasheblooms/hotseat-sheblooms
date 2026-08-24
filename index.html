@@ -182,6 +182,13 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
       <div class="timer-big" id="silenceTimer" style="font-size:44px;color:#3730a3;padding:0.25rem 0">5:00</div>
       <p style="font-size:13px;color:#4a63e8">Everyone writes before anyone speaks.</p>
     </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="lbl" style="margin:0">Responses received</div>
+        <button class="btn btn-sm" onclick="loadAdminReflections()">↺ Refresh</button>
+      </div>
+      <div id="adminRefList"><p style="font-size:12px;color:#aaa;text-align:center;padding:0.5rem 0">No responses yet.</p></div>
+    </div>
     <div class="btn-row">
       <button class="btn" onclick="toggleTimer('silence')"><span id="silenceBtnLabel">▶ Start</span></button>
       <button class="btn" onclick="resetTimer('silence')">↺</button>
@@ -388,9 +395,18 @@ function adminGoTo(n){
   document.getElementById('adminScreen-'+n).style.display='block';
   document.querySelectorAll('.pill').forEach((p,i)=>{p.classList.remove('active','done');if(i<n)p.classList.add('done');if(i===n)p.classList.add('active');});
   if(n===2)renderPitchScreen();
-  if(n===3)renderRefEntries();
+  if(n===3){loadAdminReflections();subscribeToQuestions();}
   if(n===4){renderQuestionBank();loadAdminLiveQs();subscribeToQuestions();}
   if(n===5)renderAdminReview();
+}
+
+async function loadAdminReflections(){
+  const f=founders[currentIdx];if(!f||!f.id)return;
+  const {data}=await sb.from('hs_reflections').select('*').eq('founder_id',f.id);
+  const el=document.getElementById('adminRefList');
+  if(!el)return;
+  if(!data||!data.length){el.innerHTML='<p style="font-size:12px;color:#aaa;text-align:center;padding:0.5rem 0">No responses yet.</p>';return;}
+  el.innerHTML=data.map(r=>`<div class="ref-entry"><span>${r.answer}</span></div>`).join('');
 }
 
 function renderPitchScreen(){
@@ -450,7 +466,11 @@ function subscribeToQuestions(){
   realtimeSub=sb.channel('hs-realtime-'+sessionId)
     .on('postgres_changes',{event:'*',schema:'public',table:'hs_questions'},()=>{
       if(isAdmin)loadAdminLiveQs();else renderPartQList();
-    }).subscribe();
+    })
+    .on('postgres_changes',{event:'*',schema:'public',table:'hs_reflections'},()=>{
+      if(isAdmin)loadAdminReflections();
+    })
+    .subscribe();
 }
 
 async function renderPartQList(){
@@ -497,30 +517,31 @@ async function submitPartQ(){
 
 async function renderAdminReview(){
   const f=founders[currentIdx];if(!f)return;
-  const refs=reflections[currentIdx]||[];
+  const {data:refs}=await sb.from('hs_reflections').select('*').eq('founder_id',f.id||'');
   const {data:qs}=await sb.from('hs_questions').select('*').eq('founder_id',f.id||'').order('votes',{ascending:false});
   const bankUsed=QUESTIONS.filter((_,i)=>usedQs.has(i));
   let html=`<div style="padding:10px 14px;background:#f8f8fb;border-radius:10px;margin-bottom:1rem">
     <div style="font-size:14px;font-weight:600">${f.name}</div>
     <div style="font-size:12px;color:#aaa">${f.startup}${f.stage?' · '+f.stage:''}</div>
-    ${f.problem?`<div style="font-size:12px;color:#666;margin-top:4px"><strong>Problem:</strong> ${f.problem}</div>`:''}
-    ${f.feedback_focus?`<div style="font-size:12px;color:#4a63e8;margin-top:4px">Focus: ${f.feedback_focus}</div>`:''}
+    ${f.problem?`<div style="font-size:12px;color:#1a1a2e;margin-top:4px"><strong>Problem:</strong> ${f.problem}</div>`:''}
+    ${f.feedback_focus?`<div style="font-size:12px;color:#1a1a2e;margin-top:4px"><strong>Focus:</strong> ${f.feedback_focus}</div>`:''}
   </div>`;
-  if(refs.length){html+=`<div class="lbl" style="margin-bottom:8px">Biggest risks spotted</div>`;refs.forEach(r=>html+=`<div class="review-block">${r}</div>`);}
+  if(refs&&refs.length){html+=`<div class="lbl" style="margin-bottom:8px">Biggest risks spotted</div>`;refs.forEach(r=>html+=`<div class="review-block">${r.answer}</div>`);}
   if(qs&&qs.length){html+=`<div class="lbl" style="margin:1rem 0 8px">Questions from the group</div>`;qs.forEach(q=>html+=`<div class="review-block">${q.text}${q.votes?` <span style="font-size:10px;color:#aaa">▲${q.votes}</span>`:''}</div>`);}
   if(bankUsed.length){html+=`<div class="lbl" style="margin:1rem 0 8px">Questions from the bank</div>`;bankUsed.forEach(q=>html+=`<div class="review-block"><span class="q-cat ${q.cat}" style="margin-right:6px">${q.label}</span>${q.text}</div>`);}
-  if(!refs.length&&(!qs||!qs.length)&&!bankUsed.length)html+='<p style="text-align:center;padding:1.5rem 0;color:#aaa;font-size:13px">Nothing recorded yet.</p>';
+  if((!refs||!refs.length)&&(!qs||!qs.length)&&!bankUsed.length)html+='<p style="text-align:center;padding:1.5rem 0;color:#aaa;font-size:13px">Nothing recorded yet.</p>';
   document.getElementById('adminReviewContent').innerHTML=html;
 }
 
 async function copyReview(){
-  const f=founders[currentIdx];const refs=reflections[currentIdx]||[];
+  const f=founders[currentIdx];
+  const {data:refs}=await sb.from('hs_reflections').select('*').eq('founder_id',f.id||'');
   const {data:qs}=await sb.from('hs_questions').select('*').eq('founder_id',f.id||'').order('votes',{ascending:false});
   const bankUsed=QUESTIONS.filter((_,i)=>usedQs.has(i));
   let txt=`FOUNDERS' HOT SEAT — ${new Date().toLocaleDateString('en-GB')}\n${f.name} · ${f.startup}${f.stage?' · '+f.stage:''}\n`;
   if(f.problem)txt+=`Problem: ${f.problem}\n`;
   if(f.feedback_focus)txt+=`Focus: ${f.feedback_focus}\n`;
-  if(refs.length){txt+=`\nBIGGEST RISKS SPOTTED\n`;refs.forEach(r=>txt+=`— ${r}\n`);}
+  if(refs&&refs.length){txt+=`\nBIGGEST RISKS SPOTTED\n`;refs.forEach(r=>txt+=`— ${r.answer}\n`);}
   if(qs&&qs.length){txt+=`\nQUESTIONS FROM THE GROUP\n`;qs.forEach(q=>txt+=`— ${q.text}${q.votes?' (▲'+q.votes+')':''}\n`);}
   if(bankUsed.length){txt+=`\nQUESTIONS FROM THE BANK\n`;bankUsed.forEach(q=>txt+=`[${q.label}] ${q.text}\n`);}
   navigator.clipboard.writeText(txt).then(()=>{const b=event.target;const o=b.innerHTML;b.textContent='Copied!';setTimeout(()=>b.innerHTML=o,1800);});
