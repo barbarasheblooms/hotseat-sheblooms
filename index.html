@@ -746,7 +746,7 @@ function renderPartFounderContext(){
   const el=document.getElementById('partFounderContext');if(!el)return;
   if(!f){el.innerHTML='';return;}
   el.innerHTML=`
-    <div class="card" style="background:#f8f8fb;margin-bottom:1rem">
+    <div class="card" style="margin-bottom:1rem">
       <div style="font-size:14px;font-weight:600;color:#1a1a2e;margin-bottom:2px">${f.name}</div>
       <div style="font-size:12px;color:#aaa;margin-bottom:${f.problem||f.feedback_focus||f.uncertainty?'10px':'0'}">${f.startup||''}${f.stage?' · '+f.stage:''}</div>
       ${f.problem?`<div style="margin-bottom:8px"><div class="lbl" style="margin-bottom:2px">Problem that is solving</div><div style="font-size:13px;color:#1a1a2e">${f.problem}</div></div>`:''}
