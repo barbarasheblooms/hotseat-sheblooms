@@ -397,9 +397,12 @@ async function enterPin(){
 async function createAdminPin(){
   const pin=document.getElementById('adminPinInput').value.trim().toUpperCase();
   if(!pin){return;}
-  // Check not already taken (as admin or participant)
-  const {data:existing}=await sb.from('hs_admin').select('id').eq('pin',pin).limit(1);
-  if(existing&&existing.length){document.getElementById('adminSetupError').style.display='block';return;}
+  // Check not already taken as admin PIN
+  const {data:existingAdmin}=await sb.from('hs_admin').select('id').eq('pin',pin).limit(1);
+  if(existingAdmin&&existingAdmin.length){document.getElementById('adminSetupError').textContent='That PIN is already in use. Choose another.';document.getElementById('adminSetupError').style.display='block';return;}
+  // Check not already taken as participant PIN
+  const {data:existingSess}=await sb.from('hs_sessions').select('id').eq('participant_pin',pin).limit(1);
+  if(existingSess&&existingSess.length){document.getElementById('adminSetupError').textContent='That PIN is already in use as a session PIN. Choose another.';document.getElementById('adminSetupError').style.display='block';return;}
   const {data,error}=await sb.from('hs_admin').insert({pin}).select().single();
   if(error){alert('Error. Try again.');return;}
   isAdmin=true;adminId=data.id;
@@ -443,13 +446,19 @@ function showCreateSession(){showScreen('screen-create-session');}
 async function createSession(){
   const name=document.getElementById('sessionName').value.trim();
   const pin=document.getElementById('newPartPin').value.trim().toUpperCase();
-  if(!pin){document.getElementById('createSessionError').style.display='block';return;}
+  if(!pin){document.getElementById('createSessionError').textContent='Please fill in the participant PIN.';document.getElementById('createSessionError').style.display='block';return;}
   document.getElementById('createSessionError').style.display='none';
+  // Check not taken as admin PIN
+  const {data:existingAdmin}=await sb.from('hs_admin').select('id').eq('pin',pin).limit(1);
+  if(existingAdmin&&existingAdmin.length){document.getElementById('createSessionError').textContent='That PIN is already in use as an admin PIN. Choose another.';document.getElementById('createSessionError').style.display='block';return;}
+  // Check not taken as another session PIN
+  const {data:existingSess}=await sb.from('hs_sessions').select('id').eq('participant_pin',pin).limit(1);
+  if(existingSess&&existingSess.length){document.getElementById('createSessionError').textContent='That PIN is already in use in another session. Choose another.';document.getElementById('createSessionError').style.display='block';return;}
   const {data,error}=await sb.from('hs_sessions').insert({admin_id:adminId,participant_pin:pin,name:name||null,current_founder_idx:0}).select().single();
-  if(error){alert('Error: '+error.message+' | Code: '+error.code);return;}
+  if(error){document.getElementById('createSessionError').textContent='Error: '+error.message;document.getElementById('createSessionError').style.display='block';return;}
   document.getElementById('sessionName').value='';
   document.getElementById('newPartPin').value='';
-  openAdminSession(data.id,data.participant_pin,data.name||'');
+  openAdminSession(data.id,data.participant_pin,data.name||'','active');
 }
 
 async function openAdminSession(sId,pPin,sName,sStatus){
