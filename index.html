@@ -65,7 +65,10 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
 .divider { height: 0.5px; background: #f1f1f6; margin: 1rem 0; }
 .session-card { border: 0.5px solid #e2e2ea; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 8px; background: #fff; display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer; transition: all 0.15s; }
 .session-card:hover { border-color: #5B75FE; background: #f8f9ff; }
-.session-card.active-session { border-color: #5B75FE; background: #f0f2ff; }
+.session-card.closed { background: #f8f8fb; opacity: 0.7; }
+.status-badge { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 20px; }
+.status-active { background: #e8f5ee; color: #2a7a56; }
+.status-closed { background: #f1f1f6; color: #999; }
 .badge-pin { display: inline-block; background: #f0f2ff; color: #4a63e8; border-radius: 8px; padding: 4px 10px; font-size: 12px; font-weight: 600; letter-spacing: 2px; }
 .founder-slot { border: 0.5px solid #e2e2ea; border-radius: 12px; padding: 12px; margin-bottom: 8px; }
 .ref-entry { padding: 9px 12px; border: 0.5px solid #e2e2ea; border-radius: 10px; margin-bottom: 6px; font-size: 13px; color: #1a1a2e; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
@@ -139,7 +142,13 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
 
 <!-- SCREEN: Admin Session (setup + run) -->
 <div class="screen" id="screen-admin-session">
-  <div class="logo"><div><div class="logo-text">SheBlooms</div><div class="logo-sub" id="adminSessionLabel">Moderator view</div></div></div>
+  <div class="logo" style="justify-content:space-between">
+    <div><div class="logo-text">SheBlooms</div><div class="logo-sub" id="adminSessionLabel">Moderator view</div></div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button class="btn btn-sm" onclick="showScreen('screen-admin-dashboard')" style="font-size:11px">← Sessions</button>
+      <button class="btn btn-sm btn-danger" onclick="closeSession()" id="closeSessionBtn" style="font-size:11px">Close session</button>
+    </div>
+  </div>
   <div class="pill-bar">
     <div class="pill active" onclick="adminGoTo(0)">Setup</div>
     <div class="pill" onclick="adminGoTo(2)">Pitch</div>
@@ -389,16 +398,29 @@ async function loadAdminDashboard(){
   const el=document.getElementById('sessionList');
   if(!data||!data.length){el.innerHTML='<p style="text-align:center;padding:2rem 0;color:#aaa">No sessions yet. Create your first one.</p>';return;}
   el.innerHTML=data.map(s=>`
-    <div class="session-card" onclick="openAdminSession('${s.id}','${s.participant_pin}','${s.name||''}')">
-      <div>
-        <div style="font-size:14px;font-weight:600;color:#1a1a2e">${s.name||'Unnamed session'}</div>
-        <div style="font-size:12px;color:#aaa;margin-top:2px">${new Date(s.created_at).toLocaleDateString('en-GB')}</div>
+    <div class="session-card ${s.status==='closed'?'closed':''}" onclick="openAdminSession('${s.id}','${s.participant_pin}','${s.name||''}','${s.status||'active'}')">
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <div style="font-size:14px;font-weight:600;color:#1a1a2e">${s.name||'Unnamed session'}</div>
+          <span class="status-badge ${s.status==='closed'?'status-closed':'status-active'}">${s.status==='closed'?'Closed':'Active'}</span>
+        </div>
+        <div style="font-size:12px;color:#aaa">${new Date(s.created_at).toLocaleDateString('en-GB')} · PIN: ${s.participant_pin}</div>
       </div>
-      <div style="text-align:right">
-        <div class="badge-pin">${s.participant_pin}</div>
-      </div>
+      <div style="font-size:11px;color:#5B75FE">Open →</div>
     </div>
   `).join('');
+}
+
+async function closeSession(){
+  if(!confirm('Close this session? It will be logged as completed and participants will no longer be able to submit feedback.'))return;
+  await sb.from('hs_sessions').update({status:'closed'}).eq('id',sessionId);
+  adminGoTo(5); // Go to review
+  document.getElementById('closeSessionBtn').style.display='none';
+  // Show closed banner
+  const banner=document.createElement('div');
+  banner.style.cssText='background:#e8f5ee;border-radius:10px;padding:10px 14px;margin-bottom:1rem;font-size:13px;color:#2a7a56;text-align:center;font-weight:500';
+  banner.textContent='✓ Session closed and saved to your log.';
+  document.getElementById('adminReviewContent').before(banner);
 }
 
 function showCreateSession(){showScreen('screen-create-session');}
@@ -415,16 +437,21 @@ async function createSession(){
   openAdminSession(data.id,data.participant_pin,data.name||'');
 }
 
-async function openAdminSession(sId,pPin,sName){
+async function openAdminSession(sId,pPin,sName,sStatus){
   sessionId=sId;partPin=pPin;currentIdx=0;usedQs.clear();
   localFounders=[];founders=[];
   document.getElementById('setupPartPin').textContent=pPin;
   document.getElementById('adminSessionLabel').textContent=sName||'Moderator view';
+  // Show/hide close button based on status
+  const closeBtn=document.getElementById('closeSessionBtn');
+  if(closeBtn)closeBtn.style.display=sStatus==='closed'?'none':'';
   await loadFoundersFromDB();
   renderSlots();
   subscribeRealtime();
   showScreen('screen-admin-session');
-  adminGoTo(0);
+  // Closed sessions go straight to review
+  if(sStatus==='closed')adminGoTo(5);
+  else adminGoTo(0);
 }
 
 // --- FOUNDERS ---
