@@ -12,10 +12,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'DM Sans', sans-serif; ba
 .screen { display: none; }
 .screen.visible { display: block; }
 .card { background: #fff; border: 0.5px solid #e2e2ea; border-radius: 14px; padding: 1.25rem; margin-bottom: 1rem; }
-.phase-bar { display: flex; gap: 4px; margin-bottom: 1.5rem; }
-.pill { flex: 1; padding: 6px 2px; border-radius: 8px; border: 0.5px solid #e2e2ea; font-size: 10px; text-align: center; color: #999; cursor: pointer; background: #fff; transition: all 0.2s; }
-.pill.active { background: #5B75FE; color: #fff; border-color: #5B75FE; font-weight: 600; }
-.pill.done { background: #e8f5ee; color: #2a7a56; border-color: #b8dece; }
 .btn { padding: 9px 18px; border-radius: 10px; border: 0.5px solid #d8d8e5; font-size: 14px; cursor: pointer; background: #fff; color: #1a1a2e; transition: all 0.15s; font-family: inherit; }
 .btn:hover { background: #f1f1f6; }
 .btn-primary { background: #5B75FE; color: #fff; border-color: #5B75FE; }
@@ -32,17 +28,22 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
 .field input:focus, .field textarea:focus { border-color: #5B75FE; }
 .field input::placeholder, .field textarea::placeholder { color: #bbb; }
 .field textarea { min-height: 64px; resize: none; }
+.pin-input { font-size: 28px; font-weight: 700; letter-spacing: 8px; text-align: center; padding: 14px; border: 0.5px solid #d8d8e5; border-radius: 14px; width: 100%; font-family: monospace; color: #1a1a2e; outline: none; background: #fff; }
+.pin-input:focus { border-color: #5B75FE; }
 .timer-big { font-size: 58px; font-weight: 600; letter-spacing: -3px; text-align: center; padding: 0.5rem 0; color: #1a1a2e; }
 .timer-big.warn { color: #d97706; }
 .timer-big.danger { color: #dc2626; }
 .timer-lbl { font-size: 10px; color: #999; text-align: center; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
 .pbar { height: 3px; background: #f1f1f6; border-radius: 2px; margin: 6px 0 16px; }
 .pfill { height: 100%; background: #5B75FE; border-radius: 2px; transition: width 1s linear; }
+.pill-bar { display: flex; gap: 4px; margin-bottom: 1.5rem; }
+.pill { flex: 1; padding: 6px 2px; border-radius: 8px; border: 0.5px solid #e2e2ea; font-size: 10px; text-align: center; color: #999; cursor: pointer; background: #fff; transition: all 0.2s; }
+.pill.active { background: #5B75FE; color: #fff; border-color: #5B75FE; font-weight: 600; }
+.pill.done { background: #e8f5ee; color: #2a7a56; border-color: #b8dece; }
 .silence-box { background: #f0f2ff; border: 0.5px solid #c7ceff; border-radius: 14px; padding: 1.25rem; text-align: center; margin-bottom: 1rem; }
-.q-item { padding: 10px 12px; border: 0.5px solid #e2e2ea; border-radius: 10px; margin-bottom: 6px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #1a1a2e; transition: all 0.15s; }
-.q-item:hover { border-color: #5B75FE; }
+.q-item { padding: 10px 12px; border: 0.5px solid #e2e2ea; border-radius: 10px; margin-bottom: 6px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #1a1a2e; }
 .q-item.used { opacity: 0.3; text-decoration: line-through; }
-.q-cat { font-size: 9px; font-weight: 600; padding: 2px 7px; border-radius: 20px; flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.04em; }
+.q-cat { font-size: 9px; font-weight: 600; padding: 2px 7px; border-radius: 20px; flex-shrink: 0; text-transform: uppercase; }
 .q-cat.pitch { background: #eef0ff; color: #4a63e8; }
 .q-cat.market { background: #e1f5ee; color: #0f6e56; }
 .q-cat.team { background: #faeeda; color: #854f0b; }
@@ -50,81 +51,96 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
 .q-cat.model { background: #e6f1fb; color: #185fa5; }
 .live-q { border: 0.5px solid #e2e2ea; border-radius: 10px; padding: 10px 12px; margin-bottom: 6px; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
 .live-q-text { font-size: 13px; color: #1a1a2e; flex: 1; line-height: 1.5; }
-.vote-btn { font-size: 11px; padding: 4px 10px; border-radius: 20px; border: 0.5px solid #d8d8e5; background: #fff; cursor: pointer; color: #666; font-family: inherit; flex-shrink: 0; transition: all 0.15s; white-space: nowrap; }
+.vote-btn { font-size: 11px; padding: 4px 10px; border-radius: 20px; border: 0.5px solid #d8d8e5; background: #fff; cursor: pointer; color: #666; font-family: inherit; flex-shrink: 0; }
 .vote-btn.voted { background: #5B75FE; color: #fff; border-color: #5B75FE; }
 .tab-row { display: flex; gap: 4px; margin-bottom: 1rem; }
-.tab { padding: 5px 14px; border-radius: 20px; font-size: 12px; cursor: pointer; border: 0.5px solid transparent; color: #888; transition: all 0.15s; }
+.tab { padding: 5px 14px; border-radius: 20px; font-size: 12px; cursor: pointer; border: 0.5px solid transparent; color: #888; }
 .tab.active { background: #5B75FE; color: #fff; }
 .input-row { display: flex; gap: 8px; margin-bottom: 10px; }
 .input-row input { flex: 1; font-size: 13px; padding: 8px 11px; border: 0.5px solid #d8d8e5; border-radius: 10px; background: #fff; color: #1a1a2e; font-family: inherit; outline: none; }
-.input-row input:focus { border-color: #5B75FE; }
 .review-block { border-left: 3px solid #5B75FE; padding: 8px 12px; margin-bottom: 8px; background: #f8f8fb; border-radius: 0 10px 10px 0; font-size: 13px; color: #1a1a2e; line-height: 1.5; }
 .rule-item { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 0.5px solid #f1f1f6; font-size: 13px; color: #1a1a2e; line-height: 1.5; }
 .rule-item:last-child { border-bottom: none; }
 .rule-num { width: 22px; height: 22px; border-radius: 50%; background: #5B75FE; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; margin-top: 1px; }
 .divider { height: 0.5px; background: #f1f1f6; margin: 1rem 0; }
-.pin-input { font-size: 28px; font-weight: 700; letter-spacing: 8px; text-align: center; padding: 14px; border: 0.5px solid #d8d8e5; border-radius: 14px; width: 100%; font-family: monospace; color: #1a1a2e; outline: none; background: #fff; }
-.pin-input:focus { border-color: #5B75FE; }
+.session-card { border: 0.5px solid #e2e2ea; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 8px; background: #fff; display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer; transition: all 0.15s; }
+.session-card:hover { border-color: #5B75FE; background: #f8f9ff; }
+.session-card.active-session { border-color: #5B75FE; background: #f0f2ff; }
+.badge-pin { display: inline-block; background: #f0f2ff; color: #4a63e8; border-radius: 8px; padding: 4px 10px; font-size: 12px; font-weight: 600; letter-spacing: 2px; }
 .founder-slot { border: 0.5px solid #e2e2ea; border-radius: 12px; padding: 12px; margin-bottom: 8px; }
-.ref-entry { padding: 9px 12px; border: 0.5px solid #e2e2ea; border-radius: 10px; margin-bottom: 6px; font-size: 13px; color: #1a1a2e; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; line-height: 1.5; }
-.badge-pin { display: inline-block; background: #f0f2ff; color: #4a63e8; border-radius: 8px; padding: 6px 14px; font-size: 13px; font-weight: 600; letter-spacing: 3px; }
+.ref-entry { padding: 9px 12px; border: 0.5px solid #e2e2ea; border-radius: 10px; margin-bottom: 6px; font-size: 13px; color: #1a1a2e; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
 .loader { text-align: center; padding: 2rem; color: #999; font-size: 13px; }
 .logo { display: flex; align-items: center; gap: 8px; margin-bottom: 1.5rem; }
-.logo-mark { display: none; }
-.logo-text { font-size: 13px; font-weight: 600; color: #1a1a2e; }
+.logo-text { font-size: 14px; font-weight: 600; color: #1a1a2e; }
 .logo-sub { font-size: 11px; color: #aaa; }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-<!-- Entry -->
+<!-- SCREEN: Entry -->
 <div class="screen visible" id="screen-entry">
-  <div class="logo">
-    <div class="logo-mark">🔥</div>
-    <div><div class="logo-text">SheBlooms</div><div class="logo-sub">Founders' Hot Seat</div></div>
-  </div>
+  <div class="logo"><div><div class="logo-text">SheBlooms</div><div class="logo-sub">Founders' Hot Seat</div></div></div>
   <div class="card">
     <h2 style="margin-bottom:4px">Welcome</h2>
-    <p style="margin-bottom:1.25rem">Enter your session PIN to join.</p>
-    <div class="field">
-      <div class="lbl">Session PIN</div>
+    <p style="margin-bottom:1.25rem">Enter your PIN to access the session.</p>
+    <div class="field"><div class="lbl">PIN</div>
       <input class="pin-input" id="pinInput" type="text" maxlength="6" placeholder="••••••" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')enterPin()">
     </div>
-    <div id="pinError" style="font-size:12px;color:#cc3333;text-align:center;margin-bottom:10px;display:none">Invalid PIN. Please try again.</div>
-    <button class="btn btn-primary" onclick="enterPin()" style="width:100%">Enter session →</button>
+    <div id="pinError" style="font-size:12px;color:#cc3333;text-align:center;margin-bottom:10px;display:none">Invalid PIN. Try again.</div>
+    <button class="btn btn-primary" onclick="enterPin()" style="width:100%">Enter →</button>
     <div class="divider"></div>
-    <p style="text-align:center;font-size:12px">Don't have a PIN? Ask your session moderator.</p>
-  </div>
-  <div style="text-align:center;margin-top:0.75rem">
-    <button class="btn btn-sm" style="color:#aaa;border-color:transparent;background:transparent" onclick="showCreateSession()">Create new session</button>
+    <p style="text-align:center;font-size:12px">Admin? <button class="btn btn-sm" onclick="showAdminSetup()" style="border:none;background:none;color:#5B75FE;cursor:pointer;font-size:12px;padding:0">Set up admin PIN</button></p>
   </div>
 </div>
 
-<!-- Create Session -->
-<div class="screen" id="screen-create">
-  <div class="logo">
-    <div class="logo-mark">🔥</div>
-    <div><div class="logo-text">SheBlooms</div><div class="logo-sub">Founders' Hot Seat</div></div>
-  </div>
+<!-- SCREEN: Admin Setup (first time) -->
+<div class="screen" id="screen-admin-setup">
+  <div class="logo"><div><div class="logo-text">SheBlooms</div><div class="logo-sub">Admin setup</div></div></div>
   <div class="card">
-    <h2 style="margin-bottom:6px">Create session</h2>
-    <p style="margin-bottom:1.25rem">Set two PINs — one for you, one to share with the group.</p>
-    <div class="field"><div class="lbl">Admin PIN (only you)</div><input id="createAdminPin" type="text" maxlength="6" placeholder="e.g. BARB01" oninput="this.value=this.value.toUpperCase()"></div>
-    <div class="field"><div class="lbl">Participant PIN (share with group)</div><input id="createPartPin" type="text" maxlength="6" placeholder="e.g. GROW24" oninput="this.value=this.value.toUpperCase()"></div>
-    <div id="createError" style="font-size:12px;color:#cc3333;margin-bottom:8px;display:none">Please fill both PINs.</div>
-    <button class="btn btn-primary" onclick="createSession()" style="width:100%">Create session →</button>
-    <button class="btn" onclick="goEntry()" style="width:100%;margin-top:8px">← Back</button>
+    <h2 style="margin-bottom:6px">Create your admin PIN</h2>
+    <p style="margin-bottom:1.25rem">This PIN is yours forever. Use it to access all sessions and create new ones.</p>
+    <div class="field"><div class="lbl">Choose your admin PIN</div>
+      <input class="pin-input" id="adminPinInput" type="text" maxlength="6" placeholder="••••••" oninput="this.value=this.value.toUpperCase()">
+    </div>
+    <div id="adminSetupError" style="font-size:12px;color:#cc3333;margin-bottom:8px;display:none">That PIN is already taken. Choose another.</div>
+    <button class="btn btn-primary" onclick="createAdminPin()" style="width:100%">Save admin PIN →</button>
+    <button class="btn" onclick="showScreen('screen-entry')" style="width:100%;margin-top:8px">← Back</button>
   </div>
 </div>
 
-<!-- Admin -->
-<div class="screen" id="screen-setup">
-  <div class="logo">
-    <div class="logo-mark">🔥</div>
-    <div><div class="logo-text">SheBlooms</div><div class="logo-sub">Moderator view</div></div>
+<!-- SCREEN: Admin Dashboard (session list) -->
+<div class="screen" id="screen-admin-dashboard">
+  <div class="logo"><div><div class="logo-text">SheBlooms</div><div class="logo-sub">Admin</div></div></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+    <h2 style="margin:0">Sessions</h2>
+    <button class="btn btn-primary btn-sm" onclick="showCreateSession()">+ New session</button>
   </div>
-  <div class="phase-bar" id="adminPhaseBar">
+  <div id="sessionList"><div class="loader">Loading sessions...</div></div>
+</div>
+
+<!-- SCREEN: Create Session -->
+<div class="screen" id="screen-create-session">
+  <div class="logo"><div><div class="logo-text">SheBlooms</div><div class="logo-sub">New session</div></div></div>
+  <div class="card">
+    <h2 style="margin-bottom:6px">New session</h2>
+    <p style="margin-bottom:1.25rem">Create a participant PIN that you'll share with the group for this session.</p>
+    <div class="field"><div class="lbl">Session name (optional)</div>
+      <input id="sessionName" type="text" placeholder="e.g. August Hot Seat">
+    </div>
+    <div class="field"><div class="lbl">Participant PIN</div>
+      <input class="pin-input" id="newPartPin" type="text" maxlength="6" placeholder="••••••" oninput="this.value=this.value.toUpperCase()" style="font-size:22px;letter-spacing:6px;padding:10px">
+    </div>
+    <div id="createSessionError" style="font-size:12px;color:#cc3333;margin-bottom:8px;display:none">Please fill in the participant PIN.</div>
+    <button class="btn btn-primary" onclick="createSession()" style="width:100%">Create session →</button>
+    <button class="btn" onclick="showScreen('screen-admin-dashboard')" style="width:100%;margin-top:8px">← Back</button>
+  </div>
+</div>
+
+<!-- SCREEN: Admin Session (setup + run) -->
+<div class="screen" id="screen-admin-session">
+  <div class="logo"><div><div class="logo-text">SheBlooms</div><div class="logo-sub" id="adminSessionLabel">Moderator view</div></div></div>
+  <div class="pill-bar">
     <div class="pill active" onclick="adminGoTo(0)">Setup</div>
     <div class="pill" onclick="adminGoTo(2)">Pitch</div>
     <div class="pill" onclick="adminGoTo(3)">Reflection</div>
@@ -132,6 +148,7 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
     <div class="pill" onclick="adminGoTo(5)">Review</div>
   </div>
 
+  <!-- Setup -->
   <div id="adminScreen-0" class="admin-screen">
     <div class="card">
       <h2 style="margin-bottom:4px">Session setup</h2>
@@ -147,12 +164,11 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
       </div>
       <div class="divider"></div>
       <button class="btn btn-primary" onclick="saveFounders()" style="width:100%">Start session →</button>
+      <button class="btn" onclick="showScreen('screen-admin-dashboard')" style="width:100%;margin-top:8px">← All sessions</button>
     </div>
   </div>
 
-  <div id="adminScreen-1" class="admin-screen" style="display:none">
-  </div>
-
+  <!-- Pitch -->
   <div id="adminScreen-2" class="admin-screen" style="display:none">
     <div class="card" style="text-align:center">
       <div style="font-size:13px;font-weight:600;color:#1a1a2e;margin-bottom:10px" id="pitchRoundLabel"></div>
@@ -167,6 +183,7 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
     </div>
   </div>
 
+  <!-- Reflection -->
   <div id="adminScreen-3" class="admin-screen" style="display:none">
     <div class="silence-box">
       <div style="font-size:10px;font-weight:600;color:#4a63e8;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.08em">Structured silence</div>
@@ -187,6 +204,7 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
     </div>
   </div>
 
+  <!-- Q&A -->
   <div id="adminScreen-4" class="admin-screen" style="display:none">
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -198,40 +216,33 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
         </div>
       </div>
       <div class="tab-row">
-        <div class="tab active" onclick="switchAdminTab('live', event)">Live questions</div>
-        <div class="tab" onclick="switchAdminTab('bank', event)">Question bank</div>
+        <div class="tab active" onclick="switchAdminTab('live',event)">Live questions</div>
+        <div class="tab" onclick="switchAdminTab('bank',event)">Question bank</div>
       </div>
-      <div id="adminTab-live">
-        <div id="adminLiveQList"><div class="loader">Waiting for questions...</div></div>
-      </div>
-      <div id="adminTab-bank" style="display:none">
-        <div class="lbl" style="margin-bottom:8px">Click to mark as used</div>
-        <div id="questionBank"></div>
-      </div>
+      <div id="adminTab-live"><div id="adminLiveQList"><div class="loader">Waiting for questions...</div></div></div>
+      <div id="adminTab-bank" style="display:none"><div class="lbl" style="margin-bottom:8px">Click to mark as used</div><div id="questionBank"></div></div>
       <div class="btn-row"><button class="btn btn-primary" onclick="adminGoTo(5)">See full review →</button></div>
     </div>
   </div>
 
+  <!-- Review -->
   <div id="adminScreen-5" class="admin-screen" style="display:none">
     <div class="card">
-      <h2 style="margin-bottom:4px">📋 Session review</h2>
+      <h2 style="margin-bottom:4px">Session review</h2>
       <p style="margin-bottom:1rem">Everything the pitching founder heard today.</p>
       <div id="adminReviewContent"></div>
       <div class="btn-row">
         <button class="btn btn-primary" onclick="copyReview()">Copy review</button>
         <button class="btn" onclick="nextFounder()">Next founder</button>
-        <button class="btn btn-danger btn-sm" onclick="resetAll()">↺ New session</button>
+        <button class="btn btn-danger btn-sm" onclick="showScreen('screen-admin-dashboard')">← All sessions</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Participant -->
+<!-- SCREEN: Participant -->
 <div class="screen" id="screen-participant">
-  <div class="logo">
-    <div class="logo-mark">🔥</div>
-    <div><div class="logo-text">SheBlooms</div><div class="logo-sub">Founders' Hot Seat</div></div>
-  </div>
+  <div class="logo"><div><div class="logo-text">SheBlooms</div><div class="logo-sub" id="partSessionLabel">Founders' Hot Seat</div></div></div>
   <div class="card" style="margin-bottom:1rem">
     <h3 style="margin-bottom:10px">Session rules</h3>
     <div class="rule-item"><div class="rule-num">1</div><span>The founder in the seat <strong>does not defend</strong>. She only responds.</span></div>
@@ -241,26 +252,23 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
   </div>
   <div id="partFounderContext"></div>
   <div class="tab-row" style="justify-content:center">
-    <div class="tab active" onclick="switchPartTab('reflection', event)">Reflection</div>
-    <div class="tab" onclick="switchPartTab('questions', event)">Questions</div>
-    <div class="tab" onclick="switchPartTab('review', event)">Review</div>
+    <div class="tab active" onclick="switchPartTab('reflection',event)">Reflection</div>
+    <div class="tab" onclick="switchPartTab('questions',event)">Questions</div>
+    <div class="tab" onclick="switchPartTab('review',event)">Review</div>
   </div>
-
   <div id="partTab-reflection">
     <div class="silence-box">
       <div style="font-size:10px;font-weight:600;color:#4a63e8;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.08em">Structured silence</div>
       <p style="font-size:14px;font-weight:600;color:#3730a3">What is the biggest risk you see in this business?</p>
     </div>
     <div class="card">
-      <div class="field">
-        <div class="lbl">Your answer (anonymous)</div>
+      <div class="field"><div class="lbl">Your answer (anonymous)</div>
         <textarea id="partRefAnswer" placeholder="Be specific. Vague answers won't be read aloud..." style="min-height:100px"></textarea>
       </div>
       <button class="btn btn-primary" onclick="submitPartRef()" style="width:100%">Submit →</button>
       <div id="partRefConfirm" style="display:none;margin-top:10px;padding:10px;background:#e8f5ee;border-radius:10px;font-size:13px;color:#2a7a56;text-align:center">✓ Answer submitted anonymously.</div>
     </div>
   </div>
-
   <div id="partTab-questions" style="display:none">
     <div class="card">
       <h3>Submit a question</h3>
@@ -271,97 +279,154 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
       <div class="divider"></div>
       <h3 style="margin-bottom:4px">Vote on questions</h3>
       <p style="margin-bottom:1rem">Upvote the ones you most want answered.</p>
-      <div id="partQList"><div class="loader">Loading questions...</div></div>
+      <div id="partQList"><div class="loader">Loading...</div></div>
     </div>
   </div>
-
   <div id="partTab-review" style="display:none">
     <div class="card">
       <h3 style="margin-bottom:1rem">Session review</h3>
-      <div id="partReviewContent"><div class="loader">Loading review...</div></div>
+      <div id="partReviewContent"><div class="loader">Loading...</div></div>
     </div>
   </div>
 </div>
 
 </div>
 <script>
-const SUPABASE_URL = 'https://fyswympbcriibpewkxnh.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5c3d5bXBiY3JpaWJwZXdreG5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyMjIwMTcsImV4cCI6MjA5Mjc5ODAxN30.l5gy0L9JU_8g0vIjoFWmUqP7T7zyHOsE0wdmkC2kBo0';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_URL='https://fyswympbcriibpewkxnh.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5c3d5bXBiY3JpaWJwZXdreG5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyMjIwMTcsImV4cCI6MjA5Mjc5ODAxN30.l5gy0L9JU_8g0vIjoFWmUqP7T7zyHOsE0wdmkC2kBo0';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-const QUESTIONS = [
-  { cat:'pitch', label:'Pitch', text:'If I were an investor with 10 seconds, what stayed clear?' },
-  { cat:'pitch', label:'Pitch', text:'What was most confusing? What would you change if you were the investor?' },
-  { cat:'pitch', label:'Pitch', text:'What "aha moment" did you expect me to have that I didn\'t?' },
-  { cat:'market', label:'Market', text:'When you say the market is X, how did you get to that number?' },
-  { cat:'market', label:'Market', text:'Who are the 3 specific people who would pay for this tomorrow?' },
-  { cat:'team', label:'Team', text:'Why are you, specifically, the right person to solve this problem?' },
-  { cat:'traction', label:'Traction', text:'What is the strongest signal you have that this works?' },
-  { cat:'traction', label:'Traction', text:'What is not working yet that you haven\'t mentioned?' },
-  { cat:'model', label:'Model', text:'If competitor X existed, why would I choose your company?' },
-  { cat:'model', label:'Model', text:'Why did this business not exist before you?' },
+const QUESTIONS=[
+  {cat:'pitch',label:'Pitch',text:'If I were an investor with 10 seconds, what stayed clear?'},
+  {cat:'pitch',label:'Pitch',text:'What was most confusing? What would you change if you were the investor?'},
+  {cat:'pitch',label:'Pitch',text:'What "aha moment" did you expect me to have that I didn\'t?'},
+  {cat:'market',label:'Market',text:'When you say the market is X, how did you get to that number?'},
+  {cat:'market',label:'Market',text:'Who are the 3 specific people who would pay for this tomorrow?'},
+  {cat:'team',label:'Team',text:'Why are you, specifically, the right person to solve this problem?'},
+  {cat:'traction',label:'Traction',text:'What is the strongest signal you have that this works?'},
+  {cat:'traction',label:'Traction',text:'What is not working yet that you haven\'t mentioned?'},
+  {cat:'model',label:'Model',text:'If competitor X existed, why would I choose your company?'},
+  {cat:'model',label:'Model',text:'Why did this business not exist before you?'},
 ];
 
-let sessionId=null,isAdmin=false,founders=[],currentIdx=0;
-let localFounders=[],usedQs=new Set(),reflections={};
+let isAdmin=false,adminId=null,sessionId=null,partPin='';
+let founders=[],localFounders=[],currentIdx=0,usedQs=new Set();
 let timers={pitch:null,silence:null,q:null};
 let timeLeft={pitch:300,silence:300,q:600};
 let totalTime={pitch:300,silence:300,q:600};
 let running={pitch:false,silence:false,q:false};
 let voterToken=localStorage.getItem('hs_voter')||(()=>{const t=Math.random().toString(36).slice(2,10);localStorage.setItem('hs_voter',t);return t;})();
-let realtimeSub=null,partPin='';
+let realtimeSub=null;
 
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('visible'));document.getElementById(id).classList.add('visible');}
-function goEntry(){showScreen('screen-entry');}
-function showCreateSession(){showScreen('screen-create');}
+function showAdminSetup(){showScreen('screen-admin-setup');}
 
+// --- ENTRY ---
 async function enterPin(){
   const pin=document.getElementById('pinInput').value.trim().toUpperCase();
   if(!pin)return;
-  const {data,error}=await sb.from('hs_sessions').select('*').or(`admin_pin.eq.${pin},participant_pin.eq.${pin}`).order('created_at',{ascending:false}).limit(1);
-  if(error||!data.length){document.getElementById('pinError').style.display='block';return;}
-  const sess=data[0];
-  sessionId=sess.id;partPin=sess.participant_pin;isAdmin=(pin===sess.admin_pin);
   document.getElementById('pinError').style.display='none';
-  if(isAdmin){
-    document.getElementById('setupPartPin').textContent=sess.participant_pin;
-    await loadFoundersFromDB();renderSlots();showScreen('screen-setup');
-  } else {
-    currentIdx=0;
-    await loadFoundersFromDB();
-    // Sync current founder index from session
-    const {data:sessData}=await sb.from('hs_sessions').select('current_founder_idx').eq('id',sessionId).single();
-    if(sessData && sessData.current_founder_idx !== null) currentIdx=sessData.current_founder_idx;
-    subscribeToQuestions();showScreen('screen-participant');renderPartFounderContext();renderPartQList();
+
+  // Check if admin PIN
+  const {data:adminData}=await sb.from('hs_admin').select('*').eq('pin',pin).limit(1);
+  if(adminData&&adminData.length){
+    isAdmin=true;adminId=adminData[0].id;
+    await loadAdminDashboard();
+    showScreen('screen-admin-dashboard');
+    return;
   }
+
+  // Check if participant PIN
+  const {data:sessData}=await sb.from('hs_sessions').select('*').eq('participant_pin',pin).order('created_at',{ascending:false}).limit(1);
+  if(sessData&&sessData.length){
+    isAdmin=false;
+    sessionId=sessData[0].id;
+    partPin=sessData[0].participant_pin;
+    currentIdx=sessData[0].current_founder_idx||0;
+    const label=sessData[0].name||'Founders\' Hot Seat';
+    document.getElementById('partSessionLabel').textContent=label;
+    await loadFoundersFromDB();
+    subscribeRealtime();
+    showScreen('screen-participant');
+    renderPartFounderContext();
+    renderPartQList();
+    return;
+  }
+
+  document.getElementById('pinError').style.display='block';
 }
+
+// --- ADMIN PIN CREATION ---
+async function createAdminPin(){
+  const pin=document.getElementById('adminPinInput').value.trim().toUpperCase();
+  if(!pin){return;}
+  // Check not already taken (as admin or participant)
+  const {data:existing}=await sb.from('hs_admin').select('id').eq('pin',pin).limit(1);
+  if(existing&&existing.length){document.getElementById('adminSetupError').style.display='block';return;}
+  const {data,error}=await sb.from('hs_admin').insert({pin}).select().single();
+  if(error){alert('Error. Try again.');return;}
+  isAdmin=true;adminId=data.id;
+  await loadAdminDashboard();
+  showScreen('screen-admin-dashboard');
+}
+
+// --- ADMIN DASHBOARD ---
+async function loadAdminDashboard(){
+  const {data}=await sb.from('hs_sessions').select('*').eq('admin_id',adminId).order('created_at',{ascending:false});
+  const el=document.getElementById('sessionList');
+  if(!data||!data.length){el.innerHTML='<p style="text-align:center;padding:2rem 0;color:#aaa">No sessions yet. Create your first one.</p>';return;}
+  el.innerHTML=data.map(s=>`
+    <div class="session-card" onclick="openAdminSession('${s.id}','${s.participant_pin}','${s.name||''}')">
+      <div>
+        <div style="font-size:14px;font-weight:600;color:#1a1a2e">${s.name||'Unnamed session'}</div>
+        <div style="font-size:12px;color:#aaa;margin-top:2px">${new Date(s.created_at).toLocaleDateString('en-GB')}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="badge-pin">${s.participant_pin}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function showCreateSession(){showScreen('screen-create-session');}
 
 async function createSession(){
-  const adminPin=document.getElementById('createAdminPin').value.trim().toUpperCase();
-  const partPinVal=document.getElementById('createPartPin').value.trim().toUpperCase();
-  if(!adminPin||!partPinVal){document.getElementById('createError').style.display='block';return;}
-  const {data,error}=await sb.from('hs_sessions').insert({admin_pin:adminPin,participant_pin:partPinVal}).select().single();
-  if(error){alert('Error creating session. Try again.');return;}
-  sessionId=data.id;isAdmin=true;partPin=partPinVal;
-  document.getElementById('setupPartPin').textContent=partPinVal;
-  localFounders=[];renderSlots();showScreen('screen-setup');
+  const name=document.getElementById('sessionName').value.trim();
+  const pin=document.getElementById('newPartPin').value.trim().toUpperCase();
+  if(!pin){document.getElementById('createSessionError').style.display='block';return;}
+  document.getElementById('createSessionError').style.display='none';
+  const {data,error}=await sb.from('hs_sessions').insert({admin_id:adminId,participant_pin:pin,name:name||null,current_founder_idx:0}).select().single();
+  if(error){alert('Error creating session. PIN may already be in use.');return;}
+  document.getElementById('sessionName').value='';
+  document.getElementById('newPartPin').value='';
+  openAdminSession(data.id,data.participant_pin,data.name||'');
 }
 
+async function openAdminSession(sId,pPin,sName){
+  sessionId=sId;partPin=pPin;currentIdx=0;usedQs.clear();
+  localFounders=[];founders=[];
+  document.getElementById('setupPartPin').textContent=pPin;
+  document.getElementById('adminSessionLabel').textContent=sName||'Moderator view';
+  await loadFoundersFromDB();
+  renderSlots();
+  subscribeRealtime();
+  showScreen('screen-admin-session');
+  adminGoTo(0);
+}
+
+// --- FOUNDERS ---
 async function loadFoundersFromDB(){
   const {data}=await sb.from('hs_founders').select('*').eq('session_id',sessionId).order('position');
   localFounders=data||[];
   founders=data||[];
 }
 
-function copyPartPin(){navigator.clipboard.writeText(partPin).then(()=>{alert('PIN copied: '+partPin);});}
-
-function addSlot(){localFounders.push({name:'',startup:'',stage:'',problem:'',feedback_focus:'',uncertainty:'',_new:true});renderSlots();}
+function addSlot(){localFounders.push({name:'',startup:'',stage:'',problem:'',feedback_focus:'',uncertainty:''});renderSlots();}
 function updateLocal(i,field,val){localFounders[i][field]=val;}
+
 async function removeSlot(i){
   const f=localFounders[i];
-  if(f.id){
-    await sb.from('hs_founders').delete().eq('id',f.id);
-  }
+  if(f.id)await sb.from('hs_founders').delete().eq('id',f.id);
   localFounders.splice(i,1);
   renderSlots();
 }
@@ -369,8 +434,7 @@ async function removeSlot(i){
 async function clearAllFounders(){
   if(!confirm('Remove all founders from this session?'))return;
   await sb.from('hs_founders').delete().eq('session_id',sessionId);
-  localFounders=[];founders=[];
-  renderSlots();
+  localFounders=[];founders=[];renderSlots();
 }
 
 function renderSlots(){
@@ -395,78 +459,94 @@ function renderSlots(){
 async function saveFounders(){
   const valid=localFounders.filter(f=>f.name.trim());
   if(!valid.length){alert('Add at least one founder.');return;}
-  // Insert only new founders (no id yet)
   const toInsert=valid.filter(f=>!f.id).map((f,i)=>({session_id:sessionId,name:f.name,startup:f.startup||'',stage:f.stage||'',problem:f.problem||'',feedback_focus:f.feedback_focus||'',uncertainty:f.uncertainty||'',position:valid.indexOf(f)}));
-  // Update existing founders
   const toUpdate=valid.filter(f=>f.id);
-  for(const f of toUpdate){
-    await sb.from('hs_founders').update({name:f.name,startup:f.startup||'',stage:f.stage||'',problem:f.problem||'',feedback_focus:f.feedback_focus||'',uncertainty:f.uncertainty||'',position:valid.indexOf(f)}).eq('id',f.id);
-  }
-  let newData=[];
-  if(toInsert.length){const {data}=await sb.from('hs_founders').insert(toInsert).select();newData=data||[];}
-  await loadFoundersFromDB();currentIdx=0;adminGoTo(2);
+  for(const f of toUpdate){await sb.from('hs_founders').update({name:f.name,startup:f.startup||'',stage:f.stage||'',problem:f.problem||'',feedback_focus:f.feedback_focus||'',uncertainty:f.uncertainty||'',position:valid.indexOf(f)}).eq('id',f.id);}
+  if(toInsert.length)await sb.from('hs_founders').insert(toInsert);
+  await loadFoundersFromDB();
+  currentIdx=0;
+  adminGoTo(2);
 }
 
-function renderLineup(){
-  document.getElementById('lineupDisplay').innerHTML=`
-    <div class="lbl" style="margin-bottom:8px">Today's lineup</div>
-    ${founders.map((f,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:0.5px solid #f1f1f6"><div style="width:22px;height:22px;border-radius:50%;background:${i===currentIdx?'#5B75FE':'#f1f1f6'};color:${i===currentIdx?'#fff':'#999'};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0">${i+1}</div><div><div style="font-size:13px;font-weight:500">${f.name}</div><div style="font-size:11px;color:#aaa">${f.startup}${f.stage?' · '+f.stage:''}</div></div></div>`).join('')}
-  `;
-}
-
+// --- ADMIN NAVIGATION ---
 function adminGoTo(n){
   document.querySelectorAll('.admin-screen').forEach(s=>s.style.display='none');
-  document.getElementById('adminScreen-'+n).style.display='block';
-  // Map screen index to pill index (no Rules pill: 0=Setup,2=Pitch,3=Reflection,4=Q&A,5=Review)
+  const el=document.getElementById('adminScreen-'+n);
+  if(el)el.style.display='block';
   const pillMap={0:0,2:1,3:2,4:3,5:4};
   const pillIdx=pillMap[n]??0;
   document.querySelectorAll('.pill').forEach((p,i)=>{p.classList.remove('active','done');if(i<pillIdx)p.classList.add('done');if(i===pillIdx)p.classList.add('active');});
   if(n===2)renderPitchScreen();
-  if(n===3){loadAdminReflections();subscribeToQuestions();}
-  if(n===4){renderQuestionBank();loadAdminLiveQs();subscribeToQuestions();}
+  if(n===3){loadAdminReflections();subscribeRealtime();}
+  if(n===4){renderQuestionBank();loadAdminLiveQs();subscribeRealtime();}
   if(n===5)renderAdminReview();
-}
-
-async function loadAdminReflections(){
-  const f=founders[currentIdx];if(!f||!f.id)return;
-  const {data}=await sb.from('hs_reflections').select('*').eq('founder_id',f.id);
-  const el=document.getElementById('adminRefList');
-  if(!el)return;
-  if(!data||!data.length){el.innerHTML='<p style="font-size:12px;color:#aaa;text-align:center;padding:0.5rem 0">No responses yet.</p>';return;}
-  el.innerHTML=data.map(r=>`<div class="ref-entry"><span>${r.answer}</span></div>`).join('');
 }
 
 function renderPitchScreen(){
   const f=founders[currentIdx];if(!f)return;
   document.getElementById('pitchRoundLabel').textContent=`${f.name} · ${currentIdx+1} of ${founders.length}`;
-  const infoEl=document.getElementById('pitchFounderInfo');
-  infoEl.innerHTML=`
-    <div style="margin-bottom:10px"><div class="lbl" style="margin-bottom:2px">Startup</div><div style="font-size:13px;color:#1a1a2e;font-weight:500">${f.startup||'—'}${f.stage?' · '+f.stage:''}</div></div>
-    ${f.problem?`<div style="margin-bottom:10px"><div class="lbl" style="margin-bottom:2px">Problem that is solving</div><div style="font-size:13px;color:#1a1a2e">${f.problem}</div></div>`:''}
-    ${f.feedback_focus?`<div style="margin-bottom:10px"><div class="lbl" style="margin-bottom:2px">Feedback focus</div><div style="font-size:13px;color:#1a1a2e">${f.feedback_focus}</div></div>`:''}
-    ${f.uncertainty?`<div><div class="lbl" style="margin-bottom:2px">Biggest uncertainty</div><div style="font-size:13px;color:#1a1a2e">${f.uncertainty}</div></div>`:''}
-  `;
   updateTimerDisplay('pitch');
 }
 
-function renderRefEntries(){
-  if(!reflections[currentIdx])reflections[currentIdx]=[];
-  const el=document.getElementById('refEntries');
-  if(!reflections[currentIdx].length){el.innerHTML='';return;}
-  el.innerHTML=reflections[currentIdx].map((r,i)=>`<div class="ref-entry"><span>${r}</span><button onclick="removeRef(${i})" style="background:none;border:none;cursor:pointer;color:#ccc;flex-shrink:0">✕</button></div>`).join('');
+function copyPartPin(){navigator.clipboard.writeText(partPin).then(()=>{alert('Participant PIN copied: '+partPin);});}
+
+// --- REALTIME ---
+function subscribeRealtime(){
+  if(realtimeSub)sb.removeChannel(realtimeSub);
+  realtimeSub=sb.channel('hs-'+sessionId)
+    .on('postgres_changes',{event:'*',schema:'public',table:'hs_questions',filter:`session_id=eq.${sessionId}`},()=>{
+      if(isAdmin)loadAdminLiveQs();else renderPartQList();
+    })
+    .on('postgres_changes',{event:'*',schema:'public',table:'hs_reflections',filter:`session_id=eq.${sessionId}`},()=>{
+      if(isAdmin)loadAdminReflections();
+    })
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'hs_sessions'},(payload)=>{
+      if(payload.new&&payload.new.id===sessionId&&!isAdmin){
+        const newIdx=payload.new.current_founder_idx;
+        if(newIdx!==undefined&&newIdx!==currentIdx){currentIdx=newIdx;syncParticipant();}
+      }
+    })
+    .subscribe();
+
+  if(window._poll)clearInterval(window._poll);
+  window._poll=setInterval(async()=>{
+    if(!sessionId)return;
+    if(isAdmin){loadAdminLiveQs();loadAdminReflections();}
+    else{
+      const {data}=await sb.from('hs_sessions').select('current_founder_idx').eq('id',sessionId).single();
+      if(data&&data.current_founder_idx!==null&&data.current_founder_idx!==currentIdx){currentIdx=data.current_founder_idx;syncParticipant();}
+      else renderPartQList();
+    }
+  },3000);
 }
 
-function addRef(){
-  const val=document.getElementById('refInput').value.trim();if(!val)return;
-  if(!reflections[currentIdx])reflections[currentIdx]=[];
-  reflections[currentIdx].push(val);
-  document.getElementById('refInput').value='';
-  renderRefEntries();
-  const f=founders[currentIdx];
-  if(f&&f.id)sb.from('hs_reflections').insert({session_id:sessionId,founder_id:f.id,answer:val});
+function syncParticipant(){
+  renderPartFounderContext();renderPartQList();
+  const ans=document.getElementById('partRefAnswer');if(ans)ans.value='';
+  const conf=document.getElementById('partRefConfirm');if(conf)conf.style.display='none';
+  document.querySelectorAll('#screen-participant .tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+  document.getElementById('partTab-reflection').style.display='block';
+  document.getElementById('partTab-questions').style.display='none';
+  document.getElementById('partTab-review').style.display='none';
 }
 
-function removeRef(i){reflections[currentIdx].splice(i,1);renderRefEntries();}
+// --- ADMIN REFLECTION ---
+async function loadAdminReflections(){
+  const f=founders[currentIdx];if(!f||!f.id)return;
+  const {data}=await sb.from('hs_reflections').select('*').eq('founder_id',f.id);
+  const el=document.getElementById('adminRefList');if(!el)return;
+  if(!data||!data.length){el.innerHTML='<p style="font-size:12px;color:#aaa;text-align:center;padding:0.5rem 0">No responses yet.</p>';return;}
+  el.innerHTML=data.map(r=>`<div class="ref-entry"><span>${r.answer}</span></div>`).join('');
+}
+
+// --- ADMIN Q&A ---
+async function loadAdminLiveQs(){
+  const f=founders[currentIdx];if(!f||!f.id)return;
+  const {data}=await sb.from('hs_questions').select('*').eq('founder_id',f.id).order('votes',{ascending:false});
+  const el=document.getElementById('adminLiveQList');if(!el)return;
+  if(!data||!data.length){el.innerHTML='<p style="font-size:12px;color:#aaa;text-align:center;padding:1rem 0">No questions yet.</p>';return;}
+  el.innerHTML=data.map(q=>`<div class="live-q"><div class="live-q-text">${q.text}</div><span style="font-size:11px;color:#888;flex-shrink:0">▲ ${q.votes}</span></div>`).join('');
+}
 
 function renderQuestionBank(){
   document.getElementById('questionBank').innerHTML=QUESTIONS.map((q,i)=>
@@ -476,112 +556,14 @@ function renderQuestionBank(){
 
 function toggleQ(i){usedQs.has(i)?usedQs.delete(i):usedQs.add(i);const el=document.getElementById('qitem-'+i);if(el)el.className=`q-item ${usedQs.has(i)?'used':''}`;}
 
-async function loadAdminLiveQs(){
-  const f=founders[currentIdx];if(!f||!f.id)return;
-  const {data}=await sb.from('hs_questions').select('*').eq('founder_id',f.id).order('votes',{ascending:false});
-  renderAdminQList(data||[]);
+function switchAdminTab(tab,e){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  if(e)e.target.classList.add('active');
+  document.getElementById('adminTab-live').style.display=tab==='live'?'block':'none';
+  document.getElementById('adminTab-bank').style.display=tab==='bank'?'block':'none';
 }
 
-function renderAdminQList(qs){
-  const el=document.getElementById('adminLiveQList');if(!el)return;
-  if(!qs.length){el.innerHTML='<p style="font-size:12px;color:#aaa;text-align:center;padding:1rem 0">No questions yet.</p>';return;}
-  el.innerHTML=qs.map(q=>`<div class="live-q"><div class="live-q-text">${q.text}</div><span style="font-size:11px;color:#888;flex-shrink:0">▲ ${q.votes}</span></div>`).join('');
-}
-
-function subscribeToQuestions(){
-  if(realtimeSub)sb.removeChannel(realtimeSub);
-
-  realtimeSub=sb.channel('hs-realtime-'+sessionId)
-    .on('postgres_changes',{event:'*',schema:'public',table:'hs_questions',filter:`session_id=eq.${sessionId}`},()=>{
-      if(isAdmin)loadAdminLiveQs();else renderPartQList();
-    })
-    .on('postgres_changes',{event:'*',schema:'public',table:'hs_reflections',filter:`session_id=eq.${sessionId}`},()=>{
-      if(isAdmin)loadAdminReflections();else renderPartReview();
-    })
-    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'hs_sessions'},(payload)=>{
-      if(payload.new && payload.new.id===sessionId && !isAdmin){
-        const newIdx=payload.new.current_founder_idx;
-        if(newIdx!==undefined && newIdx!==currentIdx){
-          currentIdx=newIdx;
-          syncParticipantToFounder();
-        }
-      }
-    })
-    .subscribe();
-
-  // Reliable polling every 3 seconds as fallback
-  if(window._pollInterval)clearInterval(window._pollInterval);
-  window._pollInterval=setInterval(async()=>{
-    if(!sessionId)return;
-    if(isAdmin){
-      loadAdminLiveQs();
-      loadAdminReflections();
-    } else {
-      const {data}=await sb.from('hs_sessions').select('current_founder_idx').eq('id',sessionId).single();
-      if(data && data.current_founder_idx!==null && data.current_founder_idx!==currentIdx){
-        currentIdx=data.current_founder_idx;
-        syncParticipantToFounder();
-      } else {
-        renderPartQList();
-      }
-    }
-  }, 3000);
-}
-
-function syncParticipantToFounder(){
-  renderPartFounderContext();
-  renderPartQList();
-  const ans=document.getElementById('partRefAnswer');if(ans)ans.value='';
-  const conf=document.getElementById('partRefConfirm');if(conf)conf.style.display='none';
-  // Switch back to reflection tab
-  document.querySelectorAll('#screen-participant .tab').forEach((t,i)=>{t.classList.toggle('active',i===0);});
-  document.getElementById('partTab-reflection').style.display='block';
-  document.getElementById('partTab-questions').style.display='none';
-  document.getElementById('partTab-review').style.display='none';
-}
-
-async function renderPartQList(){
-  if(!sessionId)return;
-  const f=founders.length?founders[currentIdx]:null;
-  let query=sb.from('hs_questions').select('*').eq('session_id',sessionId);
-  if(f&&f.id)query=query.eq('founder_id',f.id);
-  const {data}=await query.order('votes',{ascending:false});
-  const el=document.getElementById('partQList');if(!el)return;
-  const qs=data||[];
-  if(!qs.length){el.innerHTML='<p style="font-size:12px;color:#aaa;text-align:center;padding:1rem 0">No questions yet. Submit the first one!</p>';return;}
-  const {data:myVotes}=await sb.from('hs_votes').select('question_id').eq('voter_token',voterToken);
-  const votedIds=new Set((myVotes||[]).map(v=>v.question_id));
-  el.innerHTML=qs.map(q=>`<div class="live-q"><div class="live-q-text">${q.text}</div><button class="vote-btn ${votedIds.has(q.id)?'voted':''}" onclick="toggleVote('${q.id}',${q.votes},${votedIds.has(q.id)})">▲ ${q.votes}</button></div>`).join('');
-}
-
-async function toggleVote(qId,currentVotes,hasVoted){
-  if(hasVoted){
-    await sb.from('hs_votes').delete().eq('question_id',qId).eq('voter_token',voterToken);
-    await sb.from('hs_questions').update({votes:Math.max(0,currentVotes-1)}).eq('id',qId);
-  } else {
-    await sb.from('hs_votes').insert({question_id:qId,voter_token:voterToken});
-    await sb.from('hs_questions').update({votes:currentVotes+1}).eq('id',qId);
-  }
-  renderPartQList();
-}
-
-async function submitPartRef(){
-  const answer=document.getElementById('partRefAnswer').value.trim();
-  if(!answer){alert('Please write your answer before submitting.');return;}
-  const f=founders.length?founders[currentIdx]:null;
-  await sb.from('hs_reflections').insert({session_id:sessionId,founder_id:f?.id||null,answer});
-  document.getElementById('partRefAnswer').value='';
-  document.getElementById('partRefConfirm').style.display='block';
-}
-
-async function submitPartQ(){
-  const text=document.getElementById('partQText').value.trim();if(!text)return;
-  const f=founders.length?founders[currentIdx]:null;
-  await sb.from('hs_questions').insert({session_id:sessionId,founder_id:f?.id||null,text,votes:0});
-  document.getElementById('partQText').value='';
-  renderPartQList();
-}
-
+// --- ADMIN REVIEW ---
 async function renderAdminReview(){
   const f=founders[currentIdx];if(!f)return;
   const {data:refs}=await sb.from('hs_reflections').select('*').eq('founder_id',f.id||'');
@@ -617,10 +599,8 @@ async function copyReview(){
 
 async function nextFounder(){
   if(currentIdx<founders.length-1){
-    currentIdx++;
-    usedQs.clear();
+    currentIdx++;usedQs.clear();
     Object.keys(timeLeft).forEach(k=>{timeLeft[k]=totalTime[k];clearInterval(timers[k]);running[k]=false;});
-    // Save current founder index to session so participants sync
     await sb.from('hs_sessions').update({current_founder_idx:currentIdx}).eq('id',sessionId);
     adminGoTo(2);
   } else {
@@ -628,29 +608,10 @@ async function nextFounder(){
   }
 }
 
-function resetAll(){if(confirm('Start a new session?')){sessionId=null;isAdmin=false;founders=[];localFounders=[];currentIdx=0;usedQs.clear();reflections={};Object.keys(timeLeft).forEach(k=>{timeLeft[k]=totalTime[k];clearInterval(timers[k]);running[k]=false;});document.getElementById('pinInput').value='';showScreen('screen-entry');}}
-
-function switchAdminTab(tab,e){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  if(e)e.target.classList.add('active');
-  document.getElementById('adminTab-live').style.display=tab==='live'?'block':'none';
-  document.getElementById('adminTab-bank').style.display=tab==='bank'?'block':'none';
-}
-
-function switchPartTab(tab,e){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  if(e)e.target.classList.add('active');
-  document.getElementById('partTab-reflection').style.display=tab==='reflection'?'block':'none';
-  document.getElementById('partTab-questions').style.display=tab==='questions'?'block':'none';
-  document.getElementById('partTab-review').style.display=tab==='review'?'block':'none';
-  if(tab==='questions')renderPartQList();
-  if(tab==='review')renderPartReview();
-}
-
+// --- PARTICIPANT ---
 function renderPartFounderContext(){
   const f=founders.length?founders[currentIdx]:null;
-  const el=document.getElementById('partFounderContext');
-  if(!el)return;
+  const el=document.getElementById('partFounderContext');if(!el)return;
   if(!f){el.innerHTML='';return;}
   el.innerHTML=`
     <div class="card" style="background:#f8f8fb;margin-bottom:1rem">
@@ -663,37 +624,76 @@ function renderPartFounderContext(){
   `;
 }
 
+async function renderPartQList(){
+  if(!sessionId)return;
+  const f=founders.length?founders[currentIdx]:null;
+  let query=sb.from('hs_questions').select('*').eq('session_id',sessionId);
+  if(f&&f.id)query=query.eq('founder_id',f.id);
+  const {data}=await query.order('votes',{ascending:false});
+  const el=document.getElementById('partQList');if(!el)return;
+  const qs=data||[];
+  if(!qs.length){el.innerHTML='<p style="font-size:12px;color:#aaa;text-align:center;padding:1rem 0">No questions yet. Submit the first one!</p>';return;}
+  const {data:myVotes}=await sb.from('hs_votes').select('question_id').eq('voter_token',voterToken);
+  const votedIds=new Set((myVotes||[]).map(v=>v.question_id));
+  el.innerHTML=qs.map(q=>`<div class="live-q"><div class="live-q-text">${q.text}</div><button class="vote-btn ${votedIds.has(q.id)?'voted':''}" onclick="toggleVote('${q.id}',${q.votes},${votedIds.has(q.id)})">▲ ${q.votes}</button></div>`).join('');
+}
+
+async function toggleVote(qId,votes,hasVoted){
+  if(hasVoted){await sb.from('hs_votes').delete().eq('question_id',qId).eq('voter_token',voterToken);await sb.from('hs_questions').update({votes:Math.max(0,votes-1)}).eq('id',qId);}
+  else{await sb.from('hs_votes').insert({question_id:qId,voter_token:voterToken});await sb.from('hs_questions').update({votes:votes+1}).eq('id',qId);}
+  renderPartQList();
+}
+
+async function submitPartRef(){
+  const answer=document.getElementById('partRefAnswer').value.trim();
+  if(!answer){alert('Please write your answer before submitting.');return;}
+  const f=founders.length?founders[currentIdx]:null;
+  await sb.from('hs_reflections').insert({session_id:sessionId,founder_id:f?.id||null,answer});
+  document.getElementById('partRefAnswer').value='';
+  document.getElementById('partRefConfirm').style.display='block';
+}
+
+async function submitPartQ(){
+  const text=document.getElementById('partQText').value.trim();if(!text)return;
+  const f=founders.length?founders[currentIdx]:null;
+  await sb.from('hs_questions').insert({session_id:sessionId,founder_id:f?.id||null,text,votes:0});
+  document.getElementById('partQText').value='';
+  renderPartQList();
+}
+
 async function renderPartReview(){
   const f=founders.length?founders[currentIdx]:null;
-  const el=document.getElementById('partReviewContent');
-  if(!el||!f)return;
+  const el=document.getElementById('partReviewContent');if(!el||!f)return;
   const {data:refs}=await sb.from('hs_reflections').select('*').eq('founder_id',f.id||'');
   const {data:qs}=await sb.from('hs_questions').select('*').eq('founder_id',f.id||'').order('votes',{ascending:false});
   let html='';
-  if(refs&&refs.length){
-    html+=`<div class="lbl" style="margin-bottom:8px">Biggest risks spotted by the group</div>`;
-    refs.forEach(r=>html+=`<div class="review-block">${r.answer}</div>`);
-  }
-  if(qs&&qs.length){
-    html+=`<div class="lbl" style="margin:1rem 0 8px">Questions from the group</div>`;
-    qs.forEach(q=>html+=`<div class="review-block">${q.text}${q.votes?` <span style="font-size:10px;color:#aaa">▲${q.votes}</span>`:''}</div>`);
-  }
-  if(!html)html='<p style="text-align:center;padding:1.5rem 0;color:#aaa;font-size:13px">Nothing recorded yet. Check back after the session.</p>';
+  if(refs&&refs.length){html+=`<div class="lbl" style="margin-bottom:8px">Biggest risks spotted</div>`;refs.forEach(r=>html+=`<div class="review-block">${r.answer}</div>`);}
+  if(qs&&qs.length){html+=`<div class="lbl" style="margin:1rem 0 8px">Questions from the group</div>`;qs.forEach(q=>html+=`<div class="review-block">${q.text}${q.votes?` <span style="font-size:10px;color:#aaa">▲${q.votes}</span>`:''}</div>`);}
+  if(!html)html='<p style="text-align:center;padding:1.5rem 0;color:#aaa;font-size:13px">Nothing recorded yet.</p>';
   el.innerHTML=html;
 }
 
+function switchPartTab(tab,e){
+  document.querySelectorAll('#screen-participant .tab').forEach(t=>t.classList.remove('active'));
+  if(e)e.target.classList.add('active');
+  document.getElementById('partTab-reflection').style.display=tab==='reflection'?'block':'none';
+  document.getElementById('partTab-questions').style.display=tab==='questions'?'block':'none';
+  document.getElementById('partTab-review').style.display=tab==='review'?'block':'none';
+  if(tab==='questions')renderPartQList();
+  if(tab==='review')renderPartReview();
+}
+
+// --- TIMERS ---
 function toggleTimer(key){
   if(running[key]){clearInterval(timers[key]);running[key]=false;const id=key==='q'?'qBtnLabel':key+'BtnLabel';document.getElementById(id).textContent=key==='q'?'▶':'▶ Resume';}
   else{running[key]=true;const id=key==='q'?'qBtnLabel':key+'BtnLabel';document.getElementById(id).textContent=key==='q'?'⏸':'⏸ Pause';timers[key]=setInterval(()=>{if(timeLeft[key]<=0){clearInterval(timers[key]);running[key]=false;return;}timeLeft[key]--;updateTimerDisplay(key);},1000);}
 }
-
 function updateTimerDisplay(key){
   const t=timeLeft[key],str=Math.floor(t/60)+':'+String(t%60).padStart(2,'0'),pct=Math.round((t/totalTime[key])*100);
   if(key==='pitch'){const el=document.getElementById('pitchTimer');el.textContent=str;el.className='timer-big'+(t<=60?' danger':t<=90?' warn':'');document.getElementById('pitchProgress').style.width=pct+'%';}
   else if(key==='silence')document.getElementById('silenceTimer').textContent=str;
   else document.getElementById('qTimer').textContent=str;
 }
-
 function resetTimer(key){clearInterval(timers[key]);running[key]=false;timeLeft[key]=totalTime[key];updateTimerDisplay(key);const id=key==='q'?'qBtnLabel':key+'BtnLabel';document.getElementById(id).textContent=key==='q'?'▶':'▶ Start';}
 </script>
 </body>
