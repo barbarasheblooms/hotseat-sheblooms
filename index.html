@@ -318,7 +318,7 @@ function showCreateSession(){showScreen('screen-create');}
 async function enterPin(){
   const pin=document.getElementById('pinInput').value.trim().toUpperCase();
   if(!pin)return;
-  const {data,error}=await sb.from('hs_sessions').select('*').or(`admin_pin.eq.${pin},participant_pin.eq.${pin}`).limit(1);
+  const {data,error}=await sb.from('hs_sessions').select('*').or(`admin_pin.eq.${pin},participant_pin.eq.${pin}`).order('created_at',{ascending:false}).limit(1);
   if(error||!data.length){document.getElementById('pinError').style.display='block';return;}
   const sess=data[0];
   sessionId=sess.id;partPin=sess.participant_pin;isAdmin=(pin===sess.admin_pin);
@@ -327,6 +327,7 @@ async function enterPin(){
     document.getElementById('setupPartPin').textContent=sess.participant_pin;
     await loadFoundersFromDB();renderSlots();showScreen('screen-setup');
   } else {
+    currentIdx=0;
     await loadFoundersFromDB();
     // Sync current founder index from session
     const {data:sessData}=await sb.from('hs_sessions').select('current_founder_idx').eq('id',sessionId).single();
@@ -348,7 +349,8 @@ async function createSession(){
 
 async function loadFoundersFromDB(){
   const {data}=await sb.from('hs_founders').select('*').eq('session_id',sessionId).order('position');
-  if(data&&data.length){localFounders=data;founders=data;}
+  localFounders=data||[];
+  founders=data||[];
 }
 
 function copyPartPin(){navigator.clipboard.writeText(partPin).then(()=>{alert('PIN copied: '+partPin);});}
