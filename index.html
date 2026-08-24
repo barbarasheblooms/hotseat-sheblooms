@@ -254,12 +254,18 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
   <div class="tab-row" style="justify-content:center">
     <div class="tab active" onclick="switchPartTab('reflection',event)">Reflection</div>
     <div class="tab" onclick="switchPartTab('questions',event)">Questions</div>
+    <div class="tab" onclick="switchPartTab('feedback',event)">Feedback</div>
     <div class="tab" onclick="switchPartTab('review',event)">Review</div>
   </div>
   <div id="partTab-reflection">
     <div class="silence-box">
       <div style="font-size:10px;font-weight:600;color:#4a63e8;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.08em">Structured silence</div>
-      <p style="font-size:14px;font-weight:600;color:#3730a3">What is the biggest risk you see in this business?</p>
+      <div class="timer-big" id="partSilenceTimer" style="font-size:40px;color:#3730a3;padding:0.25rem 0">3:00</div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
+        <button class="btn btn-sm" onclick="togglePartTimer()" style="background:#4a63e8;color:#fff;border-color:#4a63e8"><span id="partSilenceBtnLabel">▶ Start</span></button>
+        <button class="btn btn-sm" onclick="resetPartTimer()">↺</button>
+      </div>
+      <p style="font-size:14px;font-weight:600;color:#3730a3;margin-top:12px">What is the biggest risk you see in this business?</p>
     </div>
     <div class="card">
       <div class="field"><div class="lbl">Your answer (anonymous)</div>
@@ -280,6 +286,17 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
       <h3 style="margin-bottom:4px">Vote on questions</h3>
       <p style="margin-bottom:1rem">Upvote the ones you most want answered.</p>
       <div id="partQList"><div class="loader">Loading...</div></div>
+    </div>
+  </div>
+  <div id="partTab-feedback" style="display:none">
+    <div class="card">
+      <h3 style="margin-bottom:4px">Additional feedback</h3>
+      <p style="margin-bottom:1rem">Anything else you want to share with this founder?</p>
+      <div class="field">
+        <textarea id="partFeedbackAnswer" placeholder="Your additional feedback..." style="min-height:120px"></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="submitPartFeedback()" style="width:100%">Submit →</button>
+      <div id="partFeedbackConfirm" style="display:none;margin-top:10px;padding:10px;background:#e8f5ee;border-radius:10px;font-size:13px;color:#2a7a56;text-align:center">✓ Feedback submitted.</div>
     </div>
   </div>
   <div id="partTab-review" style="display:none">
@@ -521,12 +538,15 @@ function subscribeRealtime(){
 }
 
 function syncParticipant(){
+  resetPartTimer();
   renderPartFounderContext();renderPartQList();
   const ans=document.getElementById('partRefAnswer');if(ans)ans.value='';
   const conf=document.getElementById('partRefConfirm');if(conf)conf.style.display='none';
+  const fconf=document.getElementById('partFeedbackConfirm');if(fconf)fconf.style.display='none';
   document.querySelectorAll('#screen-participant .tab').forEach((t,i)=>t.classList.toggle('active',i===0));
   document.getElementById('partTab-reflection').style.display='block';
   document.getElementById('partTab-questions').style.display='none';
+  document.getElementById('partTab-feedback').style.display='none';
   document.getElementById('partTab-review').style.display='none';
 }
 
@@ -705,11 +725,45 @@ async function renderPartReview(){
   el.innerHTML=html||'<p style="text-align:center;padding:1.5rem 0;color:#aaa;font-size:13px">Nothing recorded yet.</p>';
 }
 
+let partSilenceLeft=180,partSilenceRunning=false,partSilenceTimer=null;
+
+function togglePartTimer(){
+  if(partSilenceRunning){
+    clearInterval(partSilenceTimer);partSilenceRunning=false;
+    document.getElementById('partSilenceBtnLabel').textContent='▶ Resume';
+  } else {
+    partSilenceRunning=true;
+    document.getElementById('partSilenceBtnLabel').textContent='⏸ Pause';
+    partSilenceTimer=setInterval(()=>{
+      if(partSilenceLeft<=0){clearInterval(partSilenceTimer);partSilenceRunning=false;return;}
+      partSilenceLeft--;
+      const m=Math.floor(partSilenceLeft/60),s=partSilenceLeft%60;
+      document.getElementById('partSilenceTimer').textContent=m+':'+String(s).padStart(2,'0');
+    },1000);
+  }
+}
+
+function resetPartTimer(){
+  clearInterval(partSilenceTimer);partSilenceRunning=false;partSilenceLeft=180;
+  document.getElementById('partSilenceTimer').textContent='3:00';
+  document.getElementById('partSilenceBtnLabel').textContent='▶ Start';
+}
+
+async function submitPartFeedback(){
+  const text=document.getElementById('partFeedbackAnswer').value.trim();
+  if(!text){alert('Please write your feedback before submitting.');return;}
+  const f=founders.length?founders[currentIdx]:null;
+  await sb.from('hs_questions').insert({session_id:sessionId,founder_id:f?.id||null,text:'[Additional feedback] '+text,votes:0,is_bank:false});
+  document.getElementById('partFeedbackAnswer').value='';
+  document.getElementById('partFeedbackConfirm').style.display='block';
+}
+
 function switchPartTab(tab,e){
   document.querySelectorAll('#screen-participant .tab').forEach(t=>t.classList.remove('active'));
   if(e)e.target.classList.add('active');
   document.getElementById('partTab-reflection').style.display=tab==='reflection'?'block':'none';
   document.getElementById('partTab-questions').style.display=tab==='questions'?'block':'none';
+  document.getElementById('partTab-feedback').style.display=tab==='feedback'?'block':'none';
   document.getElementById('partTab-review').style.display=tab==='review'?'block':'none';
   if(tab==='questions')renderPartQList();
   if(tab==='review')renderPartReview();
