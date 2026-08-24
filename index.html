@@ -322,7 +322,7 @@ async function enterPin(){
   document.getElementById('pinError').style.display='none';
   if(isAdmin){
     document.getElementById('setupPartPin').textContent=sess.participant_pin;
-    await loadFoundersFromDB();renderSlots();showScreen('screen-setup');
+    localFounders=[];founders=[];renderSlots();showScreen('screen-setup');
   } else {
     await loadFoundersFromDB();
     // Sync current founder index from session
