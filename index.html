@@ -484,45 +484,46 @@ function subscribeToQuestions(){
     .on('postgres_changes',{event:'*',schema:'public',table:'hs_reflections',filter:`session_id=eq.${sessionId}`},()=>{
       if(isAdmin)loadAdminReflections();else renderPartReview();
     })
-    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'hs_sessions',filter:`id=eq.${sessionId}`},(payload)=>{
-      if(!isAdmin && payload.new && payload.new.current_founder_idx !== undefined){
-        currentIdx = payload.new.current_founder_idx;
-        renderPartFounderContext();
-        renderPartQList();
-        // Reset participant reflection form
-        const ans=document.getElementById('partRefAnswer');if(ans)ans.value='';
-        const conf=document.getElementById('partRefConfirm');if(conf)conf.style.display='none';
-        // Switch back to reflection tab
-        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-        const tabs=document.querySelectorAll('.tab');if(tabs[0])tabs[0].classList.add('active');
-        document.getElementById('partTab-reflection').style.display='block';
-        document.getElementById('partTab-questions').style.display='none';
-        document.getElementById('partTab-review').style.display='none';
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'hs_sessions'},(payload)=>{
+      if(payload.new && payload.new.id===sessionId && !isAdmin){
+        const newIdx=payload.new.current_founder_idx;
+        if(newIdx!==undefined && newIdx!==currentIdx){
+          currentIdx=newIdx;
+          syncParticipantToFounder();
+        }
       }
     })
-    .subscribe((status)=>{
-      console.log('Realtime status:', status);
-    });
+    .subscribe();
 
-  // Polling fallback every 5 seconds
+  // Reliable polling every 3 seconds as fallback
   if(window._pollInterval)clearInterval(window._pollInterval);
   window._pollInterval=setInterval(async()=>{
+    if(!sessionId)return;
     if(isAdmin){
       loadAdminLiveQs();
       loadAdminReflections();
     } else {
-      // Check if founder changed
       const {data}=await sb.from('hs_sessions').select('current_founder_idx').eq('id',sessionId).single();
-      if(data && data.current_founder_idx !== null && data.current_founder_idx !== currentIdx){
+      if(data && data.current_founder_idx!==null && data.current_founder_idx!==currentIdx){
         currentIdx=data.current_founder_idx;
-        renderPartFounderContext();
+        syncParticipantToFounder();
+      } else {
         renderPartQList();
-        const ans=document.getElementById('partRefAnswer');if(ans)ans.value='';
-        const conf=document.getElementById('partRefConfirm');if(conf)conf.style.display='none';
       }
-      renderPartQList();
     }
-  }, 5000);
+  }, 3000);
+}
+
+function syncParticipantToFounder(){
+  renderPartFounderContext();
+  renderPartQList();
+  const ans=document.getElementById('partRefAnswer');if(ans)ans.value='';
+  const conf=document.getElementById('partRefConfirm');if(conf)conf.style.display='none';
+  // Switch back to reflection tab
+  document.querySelectorAll('#screen-participant .tab').forEach((t,i)=>{t.classList.toggle('active',i===0);});
+  document.getElementById('partTab-reflection').style.display='block';
+  document.getElementById('partTab-questions').style.display='none';
+  document.getElementById('partTab-review').style.display='none';
 }
 
 async function renderPartQList(){
