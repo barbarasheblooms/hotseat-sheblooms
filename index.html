@@ -322,7 +322,7 @@ async function enterPin(){
   document.getElementById('pinError').style.display='none';
   if(isAdmin){
     document.getElementById('setupPartPin').textContent=sess.participant_pin;
-    localFounders=[];founders=[];renderSlots();showScreen('screen-setup');
+    await loadFoundersFromDB();renderSlots();showScreen('screen-setup');
   } else {
     await loadFoundersFromDB();
     // Sync current founder index from session
@@ -352,7 +352,12 @@ function copyPartPin(){navigator.clipboard.writeText(partPin).then(()=>{alert('P
 
 function addSlot(){localFounders.push({name:'',startup:'',stage:'',problem:'',feedback_focus:'',uncertainty:'',_new:true});renderSlots();}
 function updateLocal(i,field,val){localFounders[i][field]=val;}
-function removeSlot(i){localFounders.splice(i,1);renderSlots();}
+async function removeSlot(i){
+  const f=localFounders[i];
+  if(f.id){await sb.from('hs_founders').delete().eq('id',f.id);}
+  localFounders.splice(i,1);
+  renderSlots();
+}
 
 function renderSlots(){
   const el=document.getElementById('founderSlots');
@@ -376,10 +381,16 @@ function renderSlots(){
 async function saveFounders(){
   const valid=localFounders.filter(f=>f.name.trim());
   if(!valid.length){alert('Add at least one founder.');return;}
-  const toInsert=valid.map((f,i)=>({session_id:sessionId,name:f.name,startup:f.startup||'',stage:f.stage||'',problem:f.problem||'',feedback_focus:f.feedback_focus||'',uncertainty:f.uncertainty||'',position:i}));
-  await sb.from('hs_founders').delete().eq('session_id',sessionId);
-  const {data}=await sb.from('hs_founders').insert(toInsert).select();
-  founders=data||valid;currentIdx=0;adminGoTo(2);
+  // Insert only new founders (no id yet)
+  const toInsert=valid.filter(f=>!f.id).map((f,i)=>({session_id:sessionId,name:f.name,startup:f.startup||'',stage:f.stage||'',problem:f.problem||'',feedback_focus:f.feedback_focus||'',uncertainty:f.uncertainty||'',position:valid.indexOf(f)}));
+  // Update existing founders
+  const toUpdate=valid.filter(f=>f.id);
+  for(const f of toUpdate){
+    await sb.from('hs_founders').update({name:f.name,startup:f.startup||'',stage:f.stage||'',problem:f.problem||'',feedback_focus:f.feedback_focus||'',uncertainty:f.uncertainty||'',position:valid.indexOf(f)}).eq('id',f.id);
+  }
+  let newData=[];
+  if(toInsert.length){const {data}=await sb.from('hs_founders').insert(toInsert).select();newData=data||[];}
+  await loadFoundersFromDB();currentIdx=0;adminGoTo(2);
 }
 
 function renderLineup(){
