@@ -144,22 +144,11 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
       <div id="founderSlots"></div>
       <button class="btn btn-sm" onclick="addSlot()" style="margin-bottom:1rem">+ Add founder</button>
       <div class="divider"></div>
-      <button class="btn btn-primary" onclick="saveFounders()" style="width:100%">Save & continue →</button>
+      <button class="btn btn-primary" onclick="saveFounders()" style="width:100%">Start session →</button>
     </div>
   </div>
 
   <div id="adminScreen-1" class="admin-screen" style="display:none">
-    <div class="card">
-      <h2 style="margin-bottom:6px">Session rules</h2>
-      <p style="margin-bottom:1rem">Read these aloud before the first pitch begins.</p>
-      <div class="rule-item"><div class="rule-num">1</div><span>The founder in the seat <strong>does not defend</strong>. She only responds.</span></div>
-      <div class="rule-item"><div class="rule-num">2</div><span>Vague feedback doesn't count. "I found it confusing" must come with "confusing because…"</span></div>
-      <div class="rule-item"><div class="rule-num">3</div><span>During reflection, everyone writes before anyone speaks.</span></div>
-      <div class="rule-item"><div class="rule-num">4</div><span>What happens in the Hot Seat <strong>stays in the Hot Seat</strong>.</span></div>
-      <div class="divider"></div>
-      <div id="lineupDisplay" style="margin-bottom:1rem"></div>
-      <button class="btn btn-primary" onclick="adminGoTo(2)" style="width:100%">Begin →</button>
-    </div>
   </div>
 
   <div id="adminScreen-2" class="admin-screen" style="display:none">
@@ -242,6 +231,13 @@ p { font-size: 13px; color: #666; line-height: 1.6; }
     <div><div class="logo-text">SheBlooms</div><div class="logo-sub">Founders' Hot Seat</div></div>
   </div>
   <div id="partFounderContext"></div>
+  <div class="card" style="margin-bottom:1rem">
+    <h3 style="margin-bottom:10px">Session rules</h3>
+    <div class="rule-item"><div class="rule-num">1</div><span>The founder in the seat <strong>does not defend</strong>. She only responds.</span></div>
+    <div class="rule-item"><div class="rule-num">2</div><span>Vague feedback doesn't count. "I found it confusing" must come with "confusing because…"</span></div>
+    <div class="rule-item"><div class="rule-num">3</div><span>During reflection, everyone writes before anyone speaks.</span></div>
+    <div class="rule-item"><div class="rule-num">4</div><span>What happens in the Hot Seat <strong>stays in the Hot Seat</strong>.</span></div>
+  </div>
   <div class="tab-row" style="justify-content:center">
     <div class="tab active" onclick="switchPartTab('reflection', event)">Reflection</div>
     <div class="tab" onclick="switchPartTab('questions', event)">Questions</div>
@@ -380,7 +376,7 @@ async function saveFounders(){
   const toInsert=valid.map((f,i)=>({session_id:sessionId,name:f.name,startup:f.startup||'',stage:f.stage||'',problem:f.problem||'',feedback_focus:f.feedback_focus||'',uncertainty:f.uncertainty||'',position:i}));
   await sb.from('hs_founders').delete().eq('session_id',sessionId);
   const {data}=await sb.from('hs_founders').insert(toInsert).select();
-  founders=data||valid;currentIdx=0;renderLineup();adminGoTo(1);
+  founders=data||valid;currentIdx=0;adminGoTo(2);
 }
 
 function renderLineup(){
